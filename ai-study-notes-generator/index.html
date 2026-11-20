@@ -1,0 +1,1882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudyForge — AI-Powered Study Notes & Flashcard Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <!-- PDF.js for robust client-side PDF text extraction -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+  <style>
+    :root {
+      --bg-canvas: #090a0d;
+      --bg-card: #111318;
+      --bg-card-hover: #161a22;
+      --bg-input: #0c0e12;
+      --border-subtle: #222630;
+      --border-focus: #f59e0b;
+      --border-highlight: #2d3340;
+      --accent: #f59e0b;
+      --accent-hover: #d97706;
+      --accent-dim: rgba(245, 158, 11, 0.12);
+      --accent-border: rgba(245, 158, 11, 0.35);
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+      --emerald: #10b981;
+      --emerald-dim: rgba(16, 185, 129, 0.12);
+      --emerald-border: rgba(16, 185, 129, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-canvas);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    code, pre {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .container {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 1.8rem 2rem 4rem 2rem;
+    }
+
+    /* Header */
+    .header {
+      margin-bottom: 1.3rem;
+    }
+    .brand-row {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      margin-bottom: 0.3rem;
+    }
+    .brand-logo {
+      width: 32px;
+      height: 32px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #090a0d;
+      font-weight: 800;
+      font-size: 1.15rem;
+    }
+    .main-title {
+      font-size: 2.15rem;
+      font-weight: 800;
+      letter-spacing: -0.035em;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+    .main-title span {
+      color: var(--accent);
+    }
+    .sub-title {
+      font-size: 1.02rem;
+      color: var(--text-muted);
+      margin-bottom: 0.85rem;
+    }
+
+    /* Badges */
+    .badge-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin-bottom: 1.15rem;
+    }
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.24rem 0.75rem;
+      font-size: 0.77rem;
+      font-weight: 600;
+      border-radius: 9999px;
+      letter-spacing: 0.015em;
+      border: 1px solid var(--border-subtle);
+      background: #14171f;
+      color: var(--text-muted);
+    }
+    .badge-amber {
+      background: var(--accent-dim);
+      color: var(--accent);
+      border-color: var(--accent-border);
+    }
+    .badge-emerald {
+      background: var(--emerald-dim);
+      color: var(--emerald);
+      border-color: var(--emerald-border);
+    }
+
+    /* Collapsible Configuration Strip */
+    .config-strip {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      margin-bottom: 1.4rem;
+      overflow: hidden;
+      transition: border-color 0.2s ease;
+    }
+    .config-strip:hover {
+      border-color: var(--border-highlight);
+    }
+    .config-toggle-btn {
+      width: 100%;
+      background: transparent;
+      border: none;
+      padding: 0.9rem 1.25rem;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 0.92rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      text-align: left;
+    }
+    .config-toggle-btn span {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .config-chevron {
+      transition: transform 0.2s ease;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .config-body {
+      display: none;
+      padding: 1.15rem 1.25rem 1.35rem 1.25rem;
+      border-top: 1px solid var(--border-subtle);
+      background: #0d0f14;
+    }
+    .config-body.open {
+      display: grid;
+      grid-template-columns: 1.5fr 1.3fr 1.2fr;
+      gap: 1.5rem;
+    }
+    @media (max-width: 900px) {
+      .config-body.open {
+        grid-template-columns: 1fr;
+      }
+    }
+    .cfg-group label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 0.45rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .cfg-select, .cfg-slider {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 0.6rem 0.8rem;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 0.88rem;
+    }
+    .cfg-select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin-top: 0.3rem;
+    }
+    .slider-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent);
+      min-width: 45px;
+    }
+    .student-badge-grid {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+    .student-badge-grid strong {
+      color: #ffffff;
+    }
+
+    /* Workspace 2-Column Grid */
+    .workspace-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+      margin-bottom: 1.15rem;
+    }
+    @media (max-width: 900px) {
+      .workspace-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+    .card-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .card-tag {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Dropzone */
+    .dropzone {
+      flex: 1;
+      border: 1.5px dashed var(--border-highlight);
+      background: var(--bg-input);
+      border-radius: 10px;
+      padding: 1.7rem 1.2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      min-height: 200px;
+      position: relative;
+    }
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+    }
+    .dropzone input[type="file"] {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+    .dropzone-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      color: var(--accent);
+    }
+    .dropzone-prompt {
+      font-weight: 600;
+      color: #ffffff;
+      font-size: 0.92rem;
+      margin-bottom: 0.2rem;
+    }
+    .dropzone-hint {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+    }
+
+    .file-status-banner {
+      display: none;
+      margin-top: 0.85rem;
+      padding: 0.65rem 0.9rem;
+      background: var(--accent-dim);
+      border: 1px solid var(--accent-border);
+      border-radius: 8px;
+      font-size: 0.84rem;
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .clear-btn {
+      margin-top: 0.85rem;
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 0.5rem 0.9rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      width: 100%;
+    }
+    .clear-btn:hover {
+      border-color: var(--text-muted);
+      color: #ffffff;
+      background: #191c24;
+    }
+
+    /* Textarea */
+    .notes-textarea {
+      flex: 1;
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 0.95rem;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 0.92rem;
+      line-height: 1.6;
+      resize: vertical;
+      min-height: 200px;
+    }
+    .notes-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .notes-textarea::placeholder {
+      color: var(--text-dim);
+    }
+
+    /* Live Metrics Grid */
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.85rem;
+      margin-bottom: 1.15rem;
+    }
+    @media (max-width: 800px) {
+      .metric-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    .metric-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+      text-align: center;
+      transition: border-color 0.2s ease;
+    }
+    .metric-card:hover {
+      border-color: var(--border-highlight);
+    }
+    .metric-val {
+      font-size: 1.55rem;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+    .metric-lbl {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 0.25rem;
+    }
+
+    /* Action Button */
+    .action-btn {
+      width: 100%;
+      background: var(--accent);
+      color: #090a0d;
+      border: none;
+      border-radius: 8px;
+      padding: 0.85rem 1.5rem;
+      font-size: 1.02rem;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 14px rgba(245, 158, 11, 0.25);
+    }
+    .action-btn:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(245, 158, 11, 0.35);
+    }
+    .action-btn:active {
+      transform: translateY(0);
+    }
+
+    /* Output Section */
+    .output-section {
+      display: none;
+      margin-top: 2rem;
+    }
+
+    /* Tab Contrast Fix: High Contrast Inactive and Active */
+    .tab-bar {
+      display: flex;
+      gap: 0.35rem;
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: 1.5rem;
+      overflow-x: auto;
+    }
+    .tab-btn {
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      padding: 0.75rem 1.15rem;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.92rem;
+      color: #e5e7eb; /* Crisp High-Contrast Inactive */
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      border-radius: 6px 6px 0 0;
+    }
+    .tab-btn:hover {
+      color: #ffffff;
+      background: #141720;
+    }
+    .tab-btn.active {
+      color: #ffffff;
+      border-bottom: 2px solid var(--accent);
+      background: #141822;
+    }
+
+    .tab-pane {
+      display: none;
+    }
+    .tab-pane.active {
+      display: block;
+    }
+
+    /* Summary Pane */
+    .summary-bullet {
+      background: var(--bg-card);
+      border-left: 3.5px solid var(--accent);
+      border-top: 1px solid var(--border-subtle);
+      border-right: 1px solid var(--border-subtle);
+      border-bottom: 1px solid var(--border-subtle);
+      border-radius: 0 8px 8px 0;
+      padding: 0.9rem 1.2rem;
+      margin-bottom: 0.75rem;
+      font-size: 0.96rem;
+      line-height: 1.6;
+      color: #ffffff;
+    }
+    .export-row {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1.25rem;
+      flex-wrap: wrap;
+    }
+    .btn-secondary {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 0.6rem 1.1rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #ffffff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: #171b24;
+    }
+
+    /* Flashcard UI */
+    .fc-container {
+      max-width: 780px;
+      margin: 0 auto 1.75rem auto;
+    }
+    .fc-progress-bar {
+      width: 100%;
+      height: 6px;
+      background: var(--border-subtle);
+      border-radius: 9999px;
+      overflow: hidden;
+      margin-bottom: 0.85rem;
+    }
+    .fc-progress-fill {
+      height: 100%;
+      background: var(--accent);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    .fc-meta-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.84rem;
+      color: var(--text-muted);
+      margin-bottom: 0.85rem;
+    }
+    .fc-meta-bar strong {
+      color: #ffffff;
+    }
+
+    .flip-card {
+      background: linear-gradient(145deg, #12141b 0%, #171a23 100%);
+      border: 1.5px solid var(--accent);
+      border-radius: 14px;
+      padding: 2.2rem 2rem;
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      text-align: center;
+      cursor: pointer;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
+      margin-bottom: 1.15rem;
+      transition: all 0.2s ease;
+    }
+    .flip-card:hover {
+      border-color: var(--accent-hover);
+    }
+    .fc-type-tag {
+      font-size: 0.74rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+    }
+    .fc-question {
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.4;
+    }
+    .fc-answer {
+      display: none;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid var(--emerald-border);
+      border-radius: 10px;
+      padding: 1.2rem;
+      margin-top: 1.25rem;
+      color: #d1fae5;
+      font-size: 1.05rem;
+      font-weight: 500;
+      line-height: 1.6;
+      text-align: left;
+    }
+    .fc-answer.revealed {
+      display: block;
+    }
+
+    .fc-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .fc-nav-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 0.6rem 1.15rem;
+      font-weight: 700;
+      color: #ffffff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .fc-nav-btn:hover:not(:disabled) {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .fc-nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .fc-reveal-btn {
+      background: #171c26;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      border-radius: 8px;
+      padding: 0.65rem 1.4rem;
+      font-weight: 800;
+      font-size: 0.92rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .fc-reveal-btn:hover {
+      background: var(--accent);
+      color: #090a0d;
+    }
+
+    /* Accordion List */
+    .accordion-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      margin-bottom: 0.65rem;
+      overflow: hidden;
+    }
+    .accordion-header {
+      padding: 0.9rem 1.25rem;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 700;
+      color: #ffffff;
+      font-size: 0.95rem;
+    }
+    .accordion-header:hover {
+      background: #151821;
+    }
+    .accordion-content {
+      display: none;
+      padding: 1rem 1.25rem;
+      border-top: 1px solid var(--border-subtle);
+      background: #0d0f14;
+      font-size: 0.92rem;
+      line-height: 1.6;
+      color: #e5e7eb;
+    }
+    .accordion-content.open {
+      display: block;
+    }
+
+    /* Headings & Keywords */
+    .outline-node {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .tag-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+    }
+    .tag-pill {
+      background: #141720;
+      border: 1px solid var(--border-subtle);
+      border-radius: 9999px;
+      padding: 0.3rem 0.85rem;
+      font-size: 0.82rem;
+      color: #ffffff;
+    }
+    .tag-pill strong {
+      color: var(--accent);
+    }
+
+    /* Table */
+    .clean-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      text-align: left;
+    }
+    .clean-table th {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      letter-spacing: 0.05em;
+    }
+    .clean-table td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid #1a1e27;
+      color: #ffffff;
+    }
+
+    /* Viva Defense Cards */
+    .viva-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 800px) {
+      .viva-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .viva-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 1.25rem;
+    }
+    .viva-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+    .viva-box p, .viva-box ul {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+    .viva-box ul {
+      padding-left: 1.2rem;
+      margin-top: 0.4rem;
+    }
+    .viva-box code {
+      color: #ffffff;
+      background: #171b24;
+      padding: 0.15rem 0.35rem;
+      border-radius: 4px;
+      font-size: 0.82rem;
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 3.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border-subtle);
+      text-align: center;
+      font-size: 0.82rem;
+      color: var(--text-dim);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Top Brand Header -->
+    <header class="header">
+      <div class="brand-row">
+        <div class="brand-logo">⚡</div>
+        <h1 class="main-title">StudyForge <span>AI</span></h1>
+      </div>
+      <p class="sub-title">Automated Lecture Note Summarization & Active-Recall Flashcard Generator</p>
+
+      <!-- Compact Feature Badges -->
+      <div class="badge-bar">
+        <span class="badge-pill badge-amber">🎓 B.Tech CSE Mini Project</span>
+        <span class="badge-pill badge-emerald">🔒 Client-Side PDF/TXT (100% Offline)</span>
+        <span class="badge-pill">⚡ O(N) Keyword & Regex Engine</span>
+        <span class="badge-pill">🐼 One-Click CSV Export</span>
+      </div>
+    </header>
+
+    <!-- Collapsible Configuration Strip -->
+    <div class="config-strip">
+      <button class="config-toggle-btn" id="configToggleBtn" type="button">
+        <span>⚙️ Configuration, Core Syllabus Presets & Academic Details</span>
+        <span class="config-chevron" id="configChevron">▼</span>
+      </button>
+      <div class="config-body" id="configBody">
+        <!-- Preset Selector -->
+        <div class="cfg-group">
+          <label>Core Syllabus Preset:</label>
+          <select class="cfg-select" id="presetSelect">
+            <option value="os">Operating Systems: Process Management & Deadlocks</option>
+            <option value="dsa">Data Structures & Algorithms: Trees, Graphs & Complexity</option>
+            <option value="dbms">DBMS: Relational Models & ACID Properties</option>
+            <option value="cn">Computer Networks: OSI Model & Protocol Suite</option>
+          </select>
+          <button class="btn-secondary" id="loadPresetBtn" type="button" style="margin-top: 0.6rem; width: 100%;">
+            📥 Load Selected Preset Notes
+          </button>
+        </div>
+
+        <!-- Summarizer Parameters -->
+        <div class="cfg-group">
+          <label>Compression Ratio:</label>
+          <div class="slider-row">
+            <input type="range" class="cfg-slider" id="compressionSlider" min="20" max="60" value="35" step="5" />
+            <span class="slider-val" id="compressionVal">35%</span>
+          </div>
+          <label style="margin-top: 0.8rem;">Max Flashcards Limit:</label>
+          <div class="slider-row">
+            <input type="range" class="cfg-slider" id="fcLimitSlider" min="4" max="20" value="8" step="1" />
+            <span class="slider-val" id="fcLimitVal">8</span>
+          </div>
+        </div>
+
+        <!-- Student & Submission Credentials -->
+        <div class="cfg-group">
+          <label>Student Credentials:</label>
+          <div class="student-badge-grid">
+            <div>Student: <strong>Ishant Verma</strong> (22BCSE101)</div>
+            <div>Branch: <strong>B.Tech CSE — 2nd Year (4th Sem)</strong></div>
+            <div>Category: <strong>NLP & Interactive Web Application</strong></div>
+            <div>Evaluation: <strong>100% Local / Zero API Cost</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2-Column Ingestion Workspace -->
+    <div class="workspace-grid">
+      <!-- Left Column: Document Ingestion Dropzone -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📄 Document Ingestion</div>
+          <span class="card-tag">PDF / TXT Dropzone</span>
+        </div>
+
+        <div class="dropzone" id="dropzone">
+          <input type="file" id="fileInput" accept=".pdf,.txt" />
+          <div class="dropzone-icon">📥</div>
+          <div class="dropzone-prompt">Drag & drop your lecture file here</div>
+          <div class="dropzone-hint">Supports multi-page PDF (.pdf) and plain text (.txt)</div>
+        </div>
+
+        <div class="file-status-banner" id="fileStatusBanner"></div>
+        <button class="clear-btn" id="clearBtn" type="button">🗑️ Clear Input & Reset</button>
+      </div>
+
+      <!-- Right Column: Lecture Notes & Text Editor -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📝 Lecture Notes & Text Editor</div>
+          <span class="card-tag">Live Input</span>
+        </div>
+        <textarea
+          class="notes-textarea"
+          id="notesTextarea"
+          placeholder="Paste lecture notes or textbook chapters here, or upload a PDF on the left..."
+        ></textarea>
+      </div>
+    </div>
+
+    <!-- Live Metrics Grid -->
+    <div class="metric-grid">
+      <div class="metric-card">
+        <div class="metric-val" id="metricChars">0</div>
+        <div class="metric-lbl">Total Characters</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-val" id="metricWords">0</div>
+        <div class="metric-lbl">Total Words</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-val" id="metricReadTime">0m</div>
+        <div class="metric-lbl">Est. Reading Time</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-val" id="metricStatus" style="font-size: 1.05rem; padding-top: 0.35rem;">⚠️ Min 50 Chars</div>
+        <div class="metric-lbl">Engine Readiness</div>
+      </div>
+    </div>
+
+    <!-- Action Button -->
+    <button class="action-btn" id="generateBtn" type="button">
+      ⚡ Generate Summary & Flashcards
+    </button>
+
+    <!-- Output Section -->
+    <section class="output-section" id="outputSection">
+      <!-- Tab Navigation (High Contrast Inactive and Active) -->
+      <div class="tab-bar">
+        <button class="tab-btn active" data-tab="tabSummary" type="button">📋 Extractive Bullet Summary</button>
+        <button class="tab-btn" data-tab="tabFlashcards" type="button" id="tabFlashcardsBtn">🗂️ Active-Recall Flashcards</button>
+        <button class="tab-btn" data-tab="tabKeywords" type="button">🏷️ Headings & Key Terms</button>
+        <button class="tab-btn" data-tab="tabViva" type="button">🎓 B.Tech Viva Defense</button>
+      </div>
+
+      <!-- TAB 1: Extractive Summary -->
+      <div class="tab-pane active" id="tabSummary">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1rem;">
+          <h3 style="font-size: 1.15rem; font-weight: 800; color: #ffffff;">📋 Extractive Bullet Summary</h3>
+          <span style="font-size: 0.82rem; color: var(--accent); font-weight: 600;" id="reductionBadge"></span>
+        </div>
+        <div id="summaryBulletsContainer"></div>
+
+        <div class="export-row">
+          <button class="btn-secondary" id="downloadSummaryMdBtn" type="button">📥 Download Summary (.MD)</button>
+          <button class="btn-secondary" id="downloadSummaryCsvBtn" type="button">📥 Download Summary (.CSV)</button>
+        </div>
+      </div>
+
+      <!-- TAB 2: Active-Recall Flashcards -->
+      <div class="tab-pane" id="tabFlashcards">
+        <div class="fc-container">
+          <div class="fc-progress-bar">
+            <div class="fc-progress-fill" id="fcProgressFill"></div>
+          </div>
+          <div class="fc-meta-bar">
+            <div>Card <strong id="fcCurrentNum">1</strong> of <strong id="fcTotalNum">1</strong> — Concept: <strong id="fcConceptLabel">...</strong></div>
+            <div>🏆 Mastered: <strong id="fcMasteredCount">0</strong></div>
+          </div>
+
+          <!-- Flip Card -->
+          <div class="flip-card" id="flipCard">
+            <div class="fc-type-tag" id="fcTypeTag">Definition Pattern</div>
+            <div class="fc-question" id="fcQuestionText">Question loading...</div>
+            <div class="fc-answer" id="fcAnswerBox">Answer text</div>
+          </div>
+
+          <!-- Controls -->
+          <div class="fc-controls">
+            <button class="fc-nav-btn" id="fcPrevBtn" type="button">⬅️ Previous</button>
+            <button class="fc-reveal-btn" id="fcRevealBtn" type="button">👀 Reveal Answer</button>
+            <button class="fc-nav-btn" id="fcMasterToggleBtn" type="button">⭐ Mark Mastered</button>
+            <button class="fc-nav-btn" id="fcNextBtn" type="button">Next ➡️</button>
+          </div>
+        </div>
+
+        <!-- Accordion Full Deck -->
+        <h4 style="font-size: 1.05rem; font-weight: 700; color: #ffffff; margin: 1.75rem 0 0.85rem 0;">
+          📖 Full Deck Accordion View
+        </h4>
+        <div id="accordionContainer"></div>
+
+        <div class="export-row">
+          <button class="btn-secondary" id="downloadFlashcardsCsvBtn" type="button">📥 Download Flashcard Deck (.CSV)</button>
+        </div>
+      </div>
+
+      <!-- TAB 3: Headings & Key Terms -->
+      <div class="tab-pane" id="tabKeywords">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+          <div>
+            <h4 style="font-size: 1.05rem; font-weight: 700; color: #ffffff; margin-bottom: 0.85rem;">📑 Structured Topic Outline</h4>
+            <div id="headingsContainer"></div>
+          </div>
+          <div>
+            <h4 style="font-size: 1.05rem; font-weight: 700; color: #ffffff; margin-bottom: 0.85rem;">🔑 Top High-Frequency Technical Keywords</h4>
+            <div class="tag-cloud" id="tagCloud"></div>
+            <table class="clean-table" id="termsTable">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Technical Term</th>
+                  <th>Frequency</th>
+                  <th>Normalized Weight (TF)</th>
+                </tr>
+              </thead>
+              <tbody id="termsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: Viva Defense & Algorithm Mapping -->
+      <div class="tab-pane" id="tabViva">
+        <div class="viva-grid">
+          <div class="viva-box">
+            <div class="viva-title">1. Theory of Computation & Automata</div>
+            <p><strong>Finite-State Regex Matching:</strong></p>
+            <ul>
+              <li>Sentence boundary detection via lookbehind: <code>(?&lt;=[.!?])\s+</code></li>
+              <li>Multi-pattern deterministic matchers for definition structures (<code>Term: Def</code>, <code>X is defined as Y</code>, <code>X refers to Y</code>).</li>
+              <li>Operates locally in linear time with zero GPU VRAM or cloud token cost.</li>
+            </ul>
+          </div>
+
+          <div class="viva-box">
+            <div class="viva-title">2. Data Structures (Hash Maps & Sets)</div>
+            <p><strong>Hash Table Complexity:</strong></p>
+            <ul>
+              <li><strong>Hash Set:</strong> English stopword filtering in average <code>O(1)</code> time.</li>
+              <li><strong>Hash Map:</strong> Token frequency distribution computed in <code>O(N)</code> linear time over total document words <em>N</em>.</li>
+              <li>Normalized term weights scaled linearly: <code>TF(w) = freq(w) / max_freq</code>.</li>
+            </ul>
+          </div>
+
+          <div class="viva-box">
+            <div class="viva-title">3. Design & Analysis of Algorithms (DAA)</div>
+            <p><strong>Sentence Scoring & Ranking:</strong></p>
+            <ul>
+              <li>Combines word frequency density with positional and definition weight bonuses.</li>
+              <li>Top-<em>K</em> sentence selection using comparison sorting in <code>O(S log S)</code>.</li>
+              <li>Secondary chronological index sort in <code>O(K log K)</code> preserves logical lecture narrative.</li>
+            </ul>
+          </div>
+
+          <div class="viva-box">
+            <div class="viva-title">4. Real-World Engineering & Evaluation</div>
+            <p><strong>Examiner Defense Highlights:</strong></p>
+            <ul>
+              <li><strong>Zero API Vulnerability:</strong> 100% computed client-side. Zero API billing failures, rate limits, or network downtime during live evaluation.</li>
+              <li><strong>Factuality:</strong> Extractive summarization prevents hallucinated formulas or definitions.</li>
+              <li><strong>Document Ingestion:</strong> Multi-page PDF text extraction via PDF.js with automated paragraph un-wrapping.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      StudyForge AI — B.Tech 2nd Year Computer Science & Engineering Mini Project | Developed by Ishant Verma (22BCSE101)
+    </footer>
+  </div>
+
+  <script>
+    /* ============================================================
+       StudyForge Core NLP & Algorithmic Engine (100% Client-Side)
+       ============================================================ */
+
+    // English Stopwords Set for O(1) Lookups
+    const STOPWORDS = new Set([
+      "a", "about", "above", "after", "again", "against", "all", "am", "an", "and", "any", "are", 
+      "aren", "as", "at", "be", "because", "been", "before", "being", "below", "between", "both", 
+      "but", "by", "can", "cannot", "could", "did", "do", "does", "doing", "down", "during", 
+      "each", "few", "for", "from", "further", "had", "has", "have", "having", "he", "her", 
+      "here", "hers", "herself", "him", "himself", "his", "how", "i", "if", "in", "into", "is", 
+      "isn", "it", "its", "itself", "just", "me", "more", "most", "my", "myself", "no", "nor", 
+      "not", "now", "of", "off", "on", "once", "only", "or", "other", "our", "ours", "ourselves", 
+      "out", "over", "own", "same", "she", "should", "so", "some", "such", "than", "that", 
+      "the", "their", "theirs", "them", "themselves", "then", "there", "these", "they", "this", 
+      "those", "through", "to", "too", "under", "until", "up", "very", "was", "we", "were", 
+      "what", "when", "where", "which", "while", "who", "whom", "why", "will", "with", "would", 
+      "you", "your", "yours", "also", "thus", "hence", "therefore", "often", "many", "much",
+      "within", "without", "along", "using", "uses", "used", "defined"
+    ]);
+
+    // Core Syllabus Presets
+    const PRESETS = {
+      os: `Operating Systems: Process Management and Concurrency
+
+An Operating System is defined as system software that manages computer hardware, software resources, and provides common services for computer programs.
+A Process is a program in execution. Each process contains its own address space, program counter, registers, and stack.
+Thread: A lightweight unit of CPU utilization that shares memory and resources with other threads of the same process.
+CPU Scheduling: The mechanism by which the operating system decides which runnable process gets access to the CPU core.
+First-Come First-Served (FCFS) is a non-preemptive scheduling algorithm that executes processes in order of arrival.
+Round Robin is a preemptive scheduling algorithm designed for time-sharing systems where each process gets a fixed time quantum.
+Context Switching is defined as the process of saving the execution state of an active process and restoring the state of another process.
+Deadlock refers to a permanent blocking situation where a set of processes are blocked because each process holds a resource and waits for another resource held by another process.
+Mutual Exclusion is one of the four necessary conditions for deadlock occurrence.
+Hold and Wait refers to the condition where a process currently holding at least one resource is waiting to acquire additional resources held by other processes.
+Virtual Memory refers to an abstraction that provides an ideal, large, uniform array of storage to every running process.
+Paging is a memory management scheme that eliminates the need for contiguous allocation of physical memory by dividing memory into fixed-size pages.`,
+
+      dsa: `Data Structures and Algorithms: Trees, Graphs and Asymptotic Complexity
+
+Module 1: Non-Linear Data Structures
+A Data Structure is defined as a specialized format for organizing, processing, retrieving, and storing data.
+Binary Search Tree (BST): A node-based binary tree data structure where the left subtree contains only keys less than the node's key, and the right subtree contains only keys greater than the node's key.
+AVL Tree refers to a self-balancing binary search tree where the difference between heights of left and right subtrees cannot be more than one for all nodes.
+Red-Black Tree: A balanced binary search tree with an extra bit of storage per node representing color (red or black), ensuring no path is more than twice as long as any other.
+B-Tree is a self-balancing search tree in which nodes can have more than two children, extensively used in database indexing and file systems.
+
+Module 2: Graph Theory & Traversals
+A Graph is defined as a non-linear data structure consisting of vertices (nodes) and edges connecting pairs of vertices.
+Breadth-First Search (BFS) refers to a graph traversal algorithm that explores all vertices at the present depth level before moving on to vertices at the next depth level.
+Depth-First Search (DFS) is an algorithm for traversing or searching tree or graph data structures that explores as far as possible along each branch before backtracking.
+Dijkstra's Algorithm is a greedy algorithm that determines the shortest path between nodes in a weighted graph with non-negative edge weights.
+Minimum Spanning Tree (MST): A subset of the edges of a connected, edge-weighted undirected graph that connects all vertices together without any cycles and with minimum possible total edge weight.
+
+Module 3: Algorithm Analysis & Complexity
+Big-O Notation refers to a mathematical notation that describes the upper bound of an algorithm's execution time or space requirement in terms of input size N.
+Hash Table: A data structure that implements an associative array abstract data type, using a hash function to compute an index into an array of buckets in average O(1) time.
+Dynamic Programming is defined as an algorithmic technique that solves complex problems by breaking them down into simpler subproblems and storing subproblem results using memoization or tabulation.`,
+
+      dbms: `Database Management Systems: Relational Concepts & ACID Properties
+
+A Database Management System (DBMS) is defined as software that enables users to define, create, maintain, and control access to structured data.
+Relational Database: A database architecture that organizes data into tables consisting of rows (tuples) and columns (attributes).
+Primary Key: A candidate key chosen by the database designer to uniquely identify each tuple in a relation.
+Foreign Key refers to an attribute in one table that references the primary key of another table, establishing a relationship.
+ACID Properties:
+Atomicity ensures that all operations in a database transaction are completed successfully; otherwise, the entire transaction is aborted and rolled back.
+Consistency ensures that a transaction takes the database from one valid state to another valid state, preserving all integrity constraints.
+Isolation ensures that concurrent execution of transactions leaves the database in the same state that would have been obtained if transactions were executed sequentially.
+Durability ensures that once a transaction has been committed, its changes remain recorded permanently in non-volatile storage even in event of system crashes.
+Normalization is a database design technique that reduces data redundancy and eliminates undesirable insertion, update, and deletion anomalies.
+First Normal Form (1NF) eliminates duplicate columns and ensures each attribute contains atomic, indivisible values.
+Second Normal Form (2NF) enforces 1NF and removes partial functional dependencies where non-prime attributes depend on a subset of the candidate key.
+Third Normal Form (3NF) enforces 2NF and ensures that no non-prime attribute is transitively dependent on the primary key.`,
+
+      cn: `Computer Networks: OSI Architecture and Internet Protocols
+
+A Computer Network is defined as a collection of interconnected computing devices that exchange data and share resources using communication protocols.
+The OSI Model is a seven-layer conceptual framework developed by ISO that standardizes communication functions of telecommunication systems.
+Physical Layer: The lowest layer of the OSI model responsible for transmitting unstructured raw bitstreams over a physical transmission medium.
+Data Link Layer is responsible for node-to-node frame transfer, media access control (MAC), error detection, and flow control.
+Network Layer refers to the layer that manages packet routing, logical IP addressing, and path determination across heterogeneous networks.
+Transport Layer provides end-to-end communication services, connection management, flow control, and reliable byte-stream transmission.
+Transmission Control Protocol (TCP) is a connection-oriented, reliable transport layer protocol that provides guaranteed delivery through three-way handshakes and sequence numbers.
+User Datagram Protocol (UDP) is a connectionless, lightweight transport protocol that provides low-latency transmission without guaranteed delivery.
+Internet Protocol (IP) is a network-layer protocol responsible for addressing hosts and routing datagrams across network boundaries.
+Domain Name System (DNS) is defined as a hierarchical distributed naming system that translates human-readable domain names into numerical IP addresses.
+Bandwidth refers to the maximum data transfer rate of a network communications cable or channel over a given unit of time.
+Latency is the time interval required for a packet of data to travel from its source origin to its destination.`
+    };
+
+    /* ------------------------------------------------------------
+       Robust Paragraph Merging & Line Unwrapping
+       ------------------------------------------------------------ */
+    function normalizeParagraphs(rawText) {
+      const normalized = rawText.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim();
+      const rawBlocks = normalized.split(/\n\s*\n+/);
+      const cleanedBlocks = [];
+
+      for (const block of rawBlocks) {
+        const lines = block.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        if (lines.length === 0) continue;
+
+        // Unwrap hyphenated line ends
+        const unwrapped = [];
+        for (const l of lines) {
+          if (unwrapped.length > 0 && unwrapped[unwrapped.length - 1].endsWith('-')) {
+            unwrapped[unwrapped.length - 1] = unwrapped[unwrapped.length - 1].slice(0, -1) + l;
+          } else {
+            unwrapped.push(l);
+          }
+        }
+
+        if (unwrapped.length === 0) continue;
+        const first = unwrapped[0];
+
+        // Case A: Colon-heading line followed by explanation
+        if (first.endsWith(':') && first.split(/\s+/).length <= 6 && unwrapped.length > 1) {
+          const body = unwrapped.slice(1).join(' ');
+          cleanedBlocks.push(`${first} ${body}`);
+          continue;
+        }
+
+        // Case B: Markdown or Module header
+        const isHeader = /^(?:#{1,6}\s+|Module\s+[0-9IVX]+[:\-\s]+|Unit\s+[0-9IVX]+[:\-\s]+|\d+[\.\)]\s+)/i.test(first);
+        if (isHeader && unwrapped.length > 1) {
+          const body = unwrapped.slice(1).join(' ');
+          cleanedBlocks.push(`${first}\n${body}`);
+          continue;
+        }
+
+        // Case C: Standard paragraph (merge wrapped lines)
+        cleanedBlocks.push(unwrapped.join(' '));
+      }
+
+      return cleanedBlocks.join('\n\n');
+    }
+
+    /* ------------------------------------------------------------
+       Sentence Tokenizer (Lookbehind Pattern Matching)
+       ------------------------------------------------------------ */
+    function cleanAndTokenizeSentences(rawText) {
+      const normalized = normalizeParagraphs(rawText);
+      const paragraphs = normalized.split(/\n\n+/).map(p => p.trim()).filter(p => p.length > 0);
+      const cleanSentences = [];
+
+      for (const p of paragraphs) {
+        // Split on punctuation followed by space or newline
+        const sList = p.split(/(?<=[.!?])(?:\s+|\n+)/);
+        for (let s of sList) {
+          s = s.trim().replace(/^[•\-\*\d+\.\)]\s*/, '').trim();
+          if (s.length >= 12 && /[a-zA-Z]/.test(s)) {
+            cleanSentences.push(s);
+          }
+        }
+      }
+      return cleanSentences;
+    }
+
+    /* ------------------------------------------------------------
+       Structural Heading Extractor
+       ------------------------------------------------------------ */
+    function extractHeadings(rawText) {
+      const headings = [];
+      const seen = new Set();
+      const lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+      lines.forEach((line, idx) => {
+        // Markdown heading
+        const mdMatch = line.match(/^#{1,6}\s*(.+)$/);
+        if (mdMatch) {
+          const h = mdMatch[1].trim();
+          if (!seen.has(h.toLowerCase())) {
+            seen.add(h.toLowerCase());
+            headings.push(h);
+          }
+          return;
+        }
+
+        // Module / Unit header
+        const modMatch = line.match(/^(?:Module|Unit|Chapter|Section)\s+[0-9IVX]+[:\-\s]+(.+)$/i);
+        if (modMatch) {
+          const h = line.replace(/:$/, '').trim();
+          if (!seen.has(h.toLowerCase())) {
+            seen.add(h.toLowerCase());
+            headings.push(h);
+          }
+          return;
+        }
+
+        // Numbered section
+        const numMatch = line.match(/^[0-9]+[\.\)]\s*([A-Za-z0-9\s:_-]{3,65})$/);
+        if (numMatch) {
+          const h = numMatch[1].replace(/:$/, '').trim();
+          if (!seen.has(h.toLowerCase())) {
+            seen.add(h.toLowerCase());
+            headings.push(h);
+          }
+          return;
+        }
+
+        // Short title line (<= 8 words, no terminal punctuation)
+        const wordCount = line.split(/\s+/).length;
+        if (wordCount <= 8 && !/[.!?]$/.test(line)) {
+          const hasColon = line.includes(':');
+          const isCap = line[0] === line[0].toUpperCase();
+          if (idx === 0 || hasColon || isCap) {
+            const h = line.replace(/:$/, '').trim();
+            if (h.length >= 3 && !seen.has(h.toLowerCase())) {
+              seen.add(h.toLowerCase());
+              headings.push(h);
+            }
+          }
+        }
+      });
+
+      return headings;
+    }
+
+    /* ------------------------------------------------------------
+       Word Frequency & Hash Map Distribution (O(N) Complexity)
+       ------------------------------------------------------------ */
+    function computeWordFrequencies(rawText) {
+      const tokens = (rawText.toLowerCase().match(/\b[a-zA-Z]{3,}\b/g) || []);
+      const freqDict = {};
+
+      for (const t of tokens) {
+        if (!STOPWORDS.has(t)) {
+          freqDict[t] = (freqDict[t] || 0) + 1;
+        }
+      }
+
+      const values = Object.values(freqDict);
+      if (values.length === 0) return { freqDict: {}, normWeights: {} };
+
+      const maxFreq = Math.max(...values);
+      const normWeights = {};
+      for (const [k, count] of Object.entries(freqDict)) {
+        normWeights[k] = count / maxFreq;
+      }
+
+      return { freqDict, normWeights };
+    }
+
+    /* ------------------------------------------------------------
+       Extractive Summarizer & Sentence Ranking (O(S log S))
+       ------------------------------------------------------------ */
+    function extractiveSummarization(sentences, normWeights, compressionRatio = 0.35) {
+      if (sentences.length === 0) return [];
+
+      const scored = sentences.map((sentence, idx) => {
+        const words = (sentence.toLowerCase().match(/\b[a-zA-Z]{3,}\b/g) || []).filter(w => !STOPWORDS.has(w));
+        let score = 0;
+        if (words.length > 0) {
+          const rawSum = words.reduce((acc, w) => acc + (normWeights[w] || 0), 0);
+          score = rawSum / Math.sqrt(words.length);
+        }
+
+        // Positional bonus
+        let posBonus = 1.0;
+        if (idx === 0) posBonus = 1.35;
+        else if (idx < 3) posBonus = 1.20;
+
+        // Definition bonus
+        let defBonus = 1.0;
+        if (/\b(defined as|refers to|means|is an?|are an?|mechanism|technique|property|algorithm)\b/i.test(sentence)) {
+          defBonus = 1.25;
+        }
+        if (sentence.includes(':')) defBonus = 1.20;
+
+        return {
+          sentence,
+          idx,
+          finalScore: score * posBonus * defBonus
+        };
+      });
+
+      const k = Math.max(2, Math.min(sentences.length, Math.round(sentences.length * compressionRatio)));
+      
+      // Top K by score descending
+      const topK = scored.slice().sort((a, b) => b.finalScore - a.finalScore).slice(0, k);
+      
+      // Re-sort chronologically to preserve logical reading order
+      topK.sort((a, b) => a.idx - b.idx);
+
+      return topK.map(item => item.sentence);
+    }
+
+    /* ------------------------------------------------------------
+       Active-Recall Flashcard Generator (Multi-Pattern Automata)
+       ------------------------------------------------------------ */
+    function extractFlashcards(sentences, normWeights, rawText = "", maxLimit = 8) {
+      const flashcards = [];
+      const seen = new Set();
+
+      const colonRe = /^([A-Z][A-Za-z0-9\s\(\)/_-]{1,40}):\s+(.+)$/;
+      const verbRe = /\b([A-Z][A-Za-z0-9\s\(\)/_-]{1,35})\s+(is defined as|refers to|is known as|can be defined as|means|signifies|represents|is described as)\s+(.+)/i;
+      const copulaRe = /^(?:A|An|The)?\s*([A-Z][A-Za-z0-9\s\(\)/_-]{1,35})\s+(is an?|are an?|is the|are the)\s+(.+)/i;
+
+      // 1. Sentence-level pattern matching
+      for (const s of sentences) {
+        if (flashcards.length >= maxLimit) break;
+        const sClean = s.trim();
+
+        // Pattern: Colon
+        const m1 = sClean.match(colonRe);
+        if (m1) {
+          const term = m1[1].trim();
+          const ans = m1[2].trim();
+          if (term.split(/\s+/).length <= 6 && !seen.has(term.toLowerCase()) && ans.length >= 15 && ans.includes(' ')) {
+            seen.add(term.toLowerCase());
+            flashcards.push({
+              question: `What is ${term}?`,
+              answer: ans,
+              pattern: "Colon Definition",
+              concept: term
+            });
+            continue;
+          }
+        }
+
+        // Pattern: Verb-linked
+        const m2 = sClean.match(verbRe);
+        if (m2) {
+          let term = m2[1].trim().replace(/^(A|An|The)\s+/i, '');
+          const verb = m2[2].trim();
+          const ansTail = m2[3].trim();
+          if (term.split(/\s+/).length <= 6 && !seen.has(term.toLowerCase()) && ansTail.length >= 15) {
+            seen.add(term.toLowerCase());
+            flashcards.push({
+              question: `Explain what ${term} ${verb}:`,
+              answer: `${verb.charAt(0).toUpperCase() + verb.slice(1)} ${ansTail}`,
+              pattern: "Verb-Linked Definition",
+              concept: term
+            });
+            continue;
+          }
+        }
+
+        // Pattern: Copula
+        const m3 = sClean.match(copulaRe);
+        if (m3) {
+          let term = m3[1].trim().replace(/^(A|An|The)\s+/i, '');
+          const verb = m3[2].trim();
+          const ansTail = m3[3].trim();
+          if (term.split(/\s+/).length <= 6 && !seen.has(term.toLowerCase()) && ansTail.length >= 15) {
+            seen.add(term.toLowerCase());
+            flashcards.push({
+              question: `Define ${term}:`,
+              answer: `Is ${ansTail}`,
+              pattern: "Copula Definition",
+              concept: term
+            });
+            continue;
+          }
+        }
+      }
+
+      // 2. Fallback: Conceptual flashcards from high-weight sentences
+      if (flashcards.length < maxLimit) {
+        const topKeywords = Object.entries(normWeights)
+          .sort((a, b) => b[1] - a[1])
+          .map(pair => pair[0]);
+
+        for (const kw of topKeywords) {
+          if (flashcards.length >= maxLimit) break;
+          if (seen.has(kw.toLowerCase())) continue;
+
+          for (const s of sentences) {
+            const reKw = new RegExp(`\\b${kw}\\b`, 'i');
+            if (reKw.test(s) && s.length >= 25) {
+              seen.add(kw.toLowerCase());
+              flashcards.push({
+                question: `Explain the significance and mechanism of '${kw.charAt(0).toUpperCase() + kw.slice(1)}':`,
+                answer: s,
+                pattern: "Keyword Concept Extraction",
+                concept: kw.charAt(0).toUpperCase() + kw.slice(1)
+              });
+              break;
+            }
+          }
+        }
+      }
+
+      return flashcards;
+    }
+
+    /* ============================================================
+       State & UI Controllers
+       ============================================================ */
+    let currentFlashcards = [];
+    let currentCardIndex = 0;
+    let cardRevealed = false;
+    let masteredCards = new Set();
+    let currentSummarySentences = [];
+
+    // DOM Elements
+    const notesTextarea = document.getElementById('notesTextarea');
+    const fileInput = document.getElementById('fileInput');
+    const dropzone = document.getElementById('dropzone');
+    const fileStatusBanner = document.getElementById('fileStatusBanner');
+    const clearBtn = document.getElementById('clearBtn');
+    const generateBtn = document.getElementById('generateBtn');
+    const outputSection = document.getElementById('outputSection');
+
+    // Metrics
+    const metricChars = document.getElementById('metricChars');
+    const metricWords = document.getElementById('metricWords');
+    const metricReadTime = document.getElementById('metricReadTime');
+    const metricStatus = document.getElementById('metricStatus');
+
+    // Config Elements
+    const configToggleBtn = document.getElementById('configToggleBtn');
+    const configBody = document.getElementById('configBody');
+    const configChevron = document.getElementById('configChevron');
+    const presetSelect = document.getElementById('presetSelect');
+    const loadPresetBtn = document.getElementById('loadPresetBtn');
+    const compressionSlider = document.getElementById('compressionSlider');
+    const compressionVal = document.getElementById('compressionVal');
+    const fcLimitSlider = document.getElementById('fcLimitSlider');
+    const fcLimitVal = document.getElementById('fcLimitVal');
+
+    // Toggle Config Body
+    configToggleBtn.addEventListener('click', () => {
+      const isOpen = configBody.classList.toggle('open');
+      configChevron.textContent = isOpen ? '▲' : '▼';
+    });
+
+    // Slider Updates
+    compressionSlider.addEventListener('input', (e) => {
+      compressionVal.textContent = `${e.target.value}%`;
+    });
+    fcLimitSlider.addEventListener('input', (e) => {
+      fcLimitVal.textContent = e.target.value;
+    });
+
+    // Preset Loader
+    loadPresetBtn.addEventListener('click', () => {
+      const selected = presetSelect.value;
+      if (PRESETS[selected]) {
+        notesTextarea.value = PRESETS[selected];
+        updateMetrics();
+        fileStatusBanner.style.display = 'block';
+        fileStatusBanner.textContent = `⚡ Loaded syllabus preset: ${presetSelect.options[presetSelect.selectedIndex].text}`;
+      }
+    });
+
+    // Metrics Updater
+    function updateMetrics() {
+      const text = notesTextarea.value.trim();
+      const chars = text.length;
+      const words = text ? text.split(/\s+/).length : 0;
+      const readMins = Math.max(1, Math.round(words / 200));
+
+      metricChars.textContent = chars.toLocaleString();
+      metricWords.textContent = words.toLocaleString();
+      metricReadTime.textContent = `${readMins}m`;
+
+      if (chars >= 50) {
+        metricStatus.textContent = "✅ Ready";
+        metricStatus.style.color = "var(--emerald)";
+      } else {
+        metricStatus.textContent = "⚠️ Min 50 Chars";
+        metricStatus.style.color = "var(--accent)";
+      }
+    }
+    notesTextarea.addEventListener('input', updateMetrics);
+
+    // Clear Button
+    clearBtn.addEventListener('click', () => {
+      notesTextarea.value = "";
+      fileInput.value = "";
+      fileStatusBanner.style.display = "none";
+      outputSection.style.display = "none";
+      updateMetrics();
+    });
+
+    // File Drag & Drop
+    dropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropzone.classList.add('dragover');
+    });
+    dropzone.addEventListener('dragleave', () => {
+      dropzone.classList.remove('dragover');
+    });
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+      if (e.dataTransfer.files.length > 0) {
+        handleFile(e.dataTransfer.files[0]);
+      }
+    });
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        handleFile(e.target.files[0]);
+      }
+    });
+
+    // Handle Uploaded File (Client-Side PDF via PDF.js & Text)
+    async function handleFile(file) {
+      const name = file.name.toLowerCase();
+      fileStatusBanner.style.display = 'block';
+      fileStatusBanner.textContent = `⏳ Reading ${file.name}...`;
+
+      if (name.endsWith('.txt')) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          notesTextarea.value = e.target.result;
+          updateMetrics();
+          const words = notesTextarea.value.split(/\s+/).length;
+          fileStatusBanner.textContent = `📝 Loaded ${words.toLocaleString()} words from text file "${file.name}"`;
+        };
+        reader.readAsText(file);
+      } else if (name.endsWith('.pdf')) {
+        try {
+          if (typeof pdfjsLib === 'undefined') {
+            fileStatusBanner.textContent = "❌ PDF.js library not loaded. Check internet connection for CDN.";
+            return;
+          }
+          pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+          const arrayBuffer = await file.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+          let fullText = "";
+
+          for (let p = 1; p <= pdf.numPages; p++) {
+            const page = await pdf.getPage(p);
+            const textContent = await page.getTextContent();
+            const pageText = textContent.items.map(item => item.str).join(' ');
+            fullText += pageText + "\n\n";
+          }
+
+          notesTextarea.value = normalizeParagraphs(fullText);
+          updateMetrics();
+          const words = notesTextarea.value.split(/\s+/).length;
+          fileStatusBanner.textContent = `📄 Extracted ${words.toLocaleString()} words across ${pdf.numPages} pages from "${file.name}"`;
+        } catch (err) {
+          fileStatusBanner.textContent = `❌ PDF extraction error: ${err.message}`;
+        }
+      } else {
+        fileStatusBanner.textContent = "⚠️ Unsupported file format. Please upload .pdf or .txt";
+      }
+    }
+
+    // Tab Switching Controller (High-Contrast Fix)
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabBtns.forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+
+        btn.classList.add('active');
+        const target = document.getElementById(btn.dataset.tab);
+        if (target) target.classList.add('active');
+      });
+    });
+
+    /* ============================================================
+       Generate Summary & Flashcards Main Pipeline
+       ============================================================ */
+    generateBtn.addEventListener('click', () => {
+      const text = notesTextarea.value.trim();
+      if (text.length < 50) {
+        alert("Please paste or upload at least 50 characters of lecture content.");
+        return;
+      }
+
+      // Parameters
+      const compRatio = parseInt(compressionSlider.value, 10) / 100;
+      const maxFc = parseInt(fcLimitSlider.value, 10);
+
+      // Algorithmic processing
+      const sentences = cleanAndTokenizeSentences(text);
+      const headings = extractHeadings(text);
+      const { freqDict, normWeights } = computeWordFrequencies(text);
+      const summarySentences = extractiveSummarization(sentences, normWeights, compRatio);
+      const flashcards = extractFlashcards(sentences, normWeights, text, maxFc);
+
+      currentSummarySentences = summarySentences;
+      currentFlashcards = flashcards;
+      currentCardIndex = 0;
+      cardRevealed = false;
+      masteredCards = new Set();
+
+      // Render Tab 1: Extractive Summary
+      renderSummary(text, summarySentences);
+
+      // Render Tab 2: Flashcards
+      renderFlashcards(flashcards);
+
+      // Render Tab 3: Headings & Keywords
+      renderHeadingsAndKeywords(headings, freqDict, normWeights);
+
+      // Reveal Output Section
+      outputSection.style.display = "block";
+      outputSection.scrollIntoView({ behavior: 'smooth' });
+    });
+
+    /* ------------------------------------------------------------
+       Renderer: Summary
+       ------------------------------------------------------------ */
+    function renderSummary(origText, summarySentences) {
+      const container = document.getElementById('summaryBulletsContainer');
+      container.innerHTML = "";
+
+      const origWords = origText.split(/\s+/).length;
+      const sumWords = summarySentences.join(' ').split(/\s+/).length;
+      const reduction = Math.max(0, Math.round((1 - (sumWords / Math.max(1, origWords))) * 100));
+
+      document.getElementById('reductionBadge').textContent = `Content Reduction: ${reduction}% (${origWords} → ${sumWords} words)`;
+
+      if (summarySentences.length === 0) {
+        container.innerHTML = `<div style="color: var(--text-muted);">No sentences met the ranking threshold. Try increasing compression ratio.</div>`;
+        return;
+      }
+
+      summarySentences.forEach(s => {
+        const div = document.createElement('div');
+        div.className = "summary-bullet";
+        div.textContent = `🔹 ${s}`;
+        container.appendChild(div);
+      });
+    }
+
+    // Download Summary Handlers
+    document.getElementById('downloadSummaryMdBtn').addEventListener('click', () => {
+      if (currentSummarySentences.length === 0) return;
+      const md = "# AI-Generated Lecture Summary\n\n" + currentSummarySentences.map(s => `- ${s}`).join('\n');
+      downloadFile(md, "lecture_summary.md", "text/markdown");
+    });
+    document.getElementById('downloadSummaryCsvBtn').addEventListener('click', () => {
+      if (currentSummarySentences.length === 0) return;
+      const rows = [["Index", "Summary Point"]];
+      currentSummarySentences.forEach((s, i) => rows.push([i + 1, `"${s.replace(/"/g, '""')}"`]));
+      const csv = rows.map(r => r.join(',')).join('\n');
+      downloadFile(csv, "lecture_summary.csv", "text/csv");
+    });
+
+    /* ------------------------------------------------------------
+       Renderer: Interactive Active-Recall Flashcards
+       ------------------------------------------------------------ */
+    const flipCard = document.getElementById('flipCard');
+    const fcQuestionText = document.getElementById('fcQuestionText');
+    const fcAnswerBox = document.getElementById('fcAnswerBox');
+    const fcTypeTag = document.getElementById('fcTypeTag');
+    const fcConceptLabel = document.getElementById('fcConceptLabel');
+    const fcCurrentNum = document.getElementById('fcCurrentNum');
+    const fcTotalNum = document.getElementById('fcTotalNum');
+    const fcProgressFill = document.getElementById('fcProgressFill');
+    const fcMasteredCount = document.getElementById('fcMasteredCount');
+    const fcRevealBtn = document.getElementById('fcRevealBtn');
+    const fcMasterToggleBtn = document.getElementById('fcMasterToggleBtn');
+    const fcPrevBtn = document.getElementById('fcPrevBtn');
+    const fcNextBtn = document.getElementById('fcNextBtn');
+    const accordionContainer = document.getElementById('accordionContainer');
+
+    function renderFlashcards(cards) {
+      document.getElementById('tabFlashcardsBtn').textContent = `🗂️ Active-Recall Flashcards (${cards.length})`;
+      if (cards.length === 0) {
+        fcQuestionText.textContent = "No flashcards generated. Paste notes with definitions or key concepts.";
+        fcAnswerBox.textContent = "";
+        return;
+      }
+      fcTotalNum.textContent = cards.length;
+      updateCardUI();
+      renderAccordion(cards);
+    }
+
+    function updateCardUI() {
+      if (currentFlashcards.length === 0) return;
+      const card = currentFlashcards[currentCardIndex];
+      const isMastered = masteredCards.has(currentCardIndex);
+
+      fcCurrentNum.textContent = currentCardIndex + 1;
+      fcConceptLabel.textContent = card.concept;
+      fcTypeTag.textContent = `${card.pattern} ${isMastered ? "✅ (Mastered)" : ""}`;
+      fcQuestionText.textContent = card.question;
+      fcAnswerBox.textContent = card.answer;
+
+      if (cardRevealed) {
+        fcAnswerBox.classList.add('revealed');
+        fcRevealBtn.textContent = "🙈 Hide Answer";
+      } else {
+        fcAnswerBox.classList.remove('revealed');
+        fcRevealBtn.textContent = "👀 Reveal Answer";
+      }
+
+      fcMasterToggleBtn.textContent = isMastered ? "🔄 Mark Review" : "⭐ Mark Mastered";
+      fcPrevBtn.disabled = (currentCardIndex === 0);
+      fcNextBtn.disabled = (currentCardIndex === currentFlashcards.length - 1);
+
+      const progress = ((currentCardIndex + 1) / currentFlashcards.length) * 100;
+      fcProgressFill.style.width = `${progress}%`;
+      fcMasteredCount.textContent = `${masteredCards.size} / ${currentFlashcards.length}`;
+    }
+
+    flipCard.addEventListener('click', () => {
+      cardRevealed = !cardRevealed;
+      updateCardUI();
+    });
+    fcRevealBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      cardRevealed = !cardRevealed;
+      updateCardUI();
+    });
+    fcPrevBtn.addEventListener('click', () => {
+      if (currentCardIndex > 0) {
+        currentCardIndex--;
+        cardRevealed = false;
+        updateCardUI();
+      }
+    });
+    fcNextBtn.addEventListener('click', () => {
+      if (currentCardIndex < currentFlashcards.length - 1) {
+        currentCardIndex++;
+        cardRevealed = false;
+        updateCardUI();
+      }
+    });
+    fcMasterToggleBtn.addEventListener('click', () => {
+      if (masteredCards.has(currentCardIndex)) {
+        masteredCards.delete(currentCardIndex);
+      } else {
+        masteredCards.add(currentCardIndex);
+      }
+      updateCardUI();
+    });
+
+    // Accordion List
+    function renderAccordion(cards) {
+      accordionContainer.innerHTML = "";
+      cards.forEach((c, idx) => {
+        const item = document.createElement('div');
+        item.className = "accordion-item";
+
+        const header = document.createElement('div');
+        header.className = "accordion-header";
+        header.innerHTML = `<span>Card ${idx + 1}: ${c.concept} — <em>${c.question}</em></span><span>▼</span>`;
+
+        const content = document.createElement('div');
+        content.className = "accordion-content";
+        content.innerHTML = `<strong>Answer:</strong> ${c.answer}<br><small style="color: var(--accent); margin-top: 0.4rem; display: block;">Pattern: ${c.pattern}</small>`;
+
+        header.addEventListener('click', () => {
+          content.classList.toggle('open');
+        });
+
+        item.appendChild(header);
+        item.appendChild(content);
+        accordionContainer.appendChild(item);
+      });
+    }
+
+    // CSV Download
+    document.getElementById('downloadFlashcardsCsvBtn').addEventListener('click', () => {
+      if (currentFlashcards.length === 0) return;
+      const rows = [["Key Concept", "Question", "Answer", "Pattern"]];
+      currentFlashcards.forEach(c => {
+        rows.push([
+          `"${c.concept.replace(/"/g, '""')}"`,
+          `"${c.question.replace(/"/g, '""')}"`,
+          `"${c.answer.replace(/"/g, '""')}"`,
+          `"${c.pattern.replace(/"/g, '""')}"`
+        ]);
+      });
+      const csv = rows.map(r => r.join(',')).join('\n');
+      downloadFile(csv, "study_flashcards.csv", "text/csv;charset=utf-8;");
+    });
+
+    /* ------------------------------------------------------------
+       Renderer: Headings & Keywords
+       ------------------------------------------------------------ */
+    function renderHeadingsAndKeywords(headings, freqDict, normWeights) {
+      const hContainer = document.getElementById('headingsContainer');
+      hContainer.innerHTML = "";
+      if (headings.length === 0) {
+        hContainer.innerHTML = `<div style="color: var(--text-muted);">No explicit headers detected. Processed as continuous lecture notes.</div>`;
+      } else {
+        headings.forEach((h, i) => {
+          const div = document.createElement('div');
+          div.className = "outline-node";
+          div.innerHTML = `<span>📌</span> <strong>${i + 1}.</strong> ${h}`;
+          hContainer.appendChild(div);
+        });
+      }
+
+      // Keywords
+      const tagCloud = document.getElementById('tagCloud');
+      const tableBody = document.getElementById('termsTableBody');
+      tagCloud.innerHTML = "";
+      tableBody.innerHTML = "";
+
+      const topTerms = Object.entries(freqDict)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 15);
+
+      topTerms.forEach(([term, count], i) => {
+        // Tag pill
+        const pill = document.createElement('div');
+        pill.className = "tag-pill";
+        pill.innerHTML = `<strong>${term}</strong>: ${count}`;
+        tagCloud.appendChild(pill);
+
+        // Table row
+        const tr = document.createElement('tr');
+        const weight = (normWeights[term] || 0).toFixed(3);
+        tr.innerHTML = `
+          <td>${i + 1}</td>
+          <td><strong>${term}</strong></td>
+          <td>${count}</td>
+          <td><code>${weight}</code></td>
+        `;
+        tableBody.appendChild(tr);
+      });
+    }
+
+    // Helper: File Download
+    function downloadFile(content, fileName, mimeType) {
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // Auto-load default OS preset on first visit
+    window.addEventListener('DOMContentLoaded', () => {
+      notesTextarea.value = PRESETS.os;
+      updateMetrics();
+    });
+  </script>
+</body>
+</html>
