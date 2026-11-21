@@ -1,10 +1,6 @@
 """
-B.TECH 2ND YEAR — MINI PROJECT
-AI-Powered Study Notes & Flashcard Generator
-Automated Lecture Note Summarization & Active-Recall Flashcard Web Application
-
-Design: Elite High-End SaaS Single-Page Dashboard
-Theme: High-Contrast Slate Dark Aesthetic (#0E1117 / #11151C / #161B22 / #2563EB)
+StudyForge AI — Intelligent Study Notes & Flashcard Generator
+Automated Note Summarization & Active-Recall Flashcard Web Application
 """
 
 import io
@@ -106,38 +102,73 @@ CSS_STYLING = """
         letter-spacing: -0.01em !important;
     }
 
-    /* File Uploader Dropzone Text Overrides */
+    /* ---------------------------------------------------------
+       FILE UPLOADER & DROPZONE OVERRIDES (High-Contrast Sleek UI)
+       --------------------------------------------------------- */
     [data-testid="stFileUploader"] {
         padding: 0 !important;
         margin-bottom: 0.75rem !important;
     }
     [data-testid="stFileUploaderDropzone"] {
         background-color: #11151C !important;
-        border: 1.5px dashed rgba(255, 255, 255, 0.22) !important;
+        border: 1.5px dashed rgba(255, 255, 255, 0.25) !important;
         border-radius: 12px !important;
-        padding: 1.7rem 1.2rem !important;
+        padding: 1.4rem 1.2rem !important;
         text-align: center !important;
         transition: all 0.25s ease-in-out !important;
     }
     [data-testid="stFileUploaderDropzone"]:hover {
         border-color: #3B82F6 !important;
-        background-color: rgba(37, 99, 235, 0.06) !important;
+        background-color: rgba(37, 99, 235, 0.08) !important;
+        box-shadow: 0 0 16px rgba(59, 130, 246, 0.15) !important;
     }
+
+    /* Fix the stark white/unstyled "Browse files" button inside File Uploader */
+    [data-testid="stFileUploaderDropzone"] button,
+    [data-testid="stFileUploader"] button,
+    section[data-testid="stFileUploaderDropzone"] button,
+    button[data-testid="stBaseButton-secondary"]:has(span) {
+        background: linear-gradient(180deg, #2D3440 0%, #1F242D 100%) !important;
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+        border: 1px solid rgba(255, 255, 255, 0.28) !important;
+        border-radius: 8px !important;
+        font-weight: 700 !important;
+        font-size: 0.9rem !important;
+        padding: 0.55rem 1.2rem !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45) !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+    }
+    [data-testid="stFileUploaderDropzone"] button:hover,
+    [data-testid="stFileUploader"] button:hover,
+    section[data-testid="stFileUploaderDropzone"] button:hover {
+        background: linear-gradient(180deg, #374151 0%, #2D3440 100%) !important;
+        border-color: #3B82F6 !important;
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+        box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    [data-testid="stFileUploaderDropzoneInstructions"],
     [data-testid="stFileUploaderDropzoneInstructions"] span,
     [data-testid="stFileUploaderDropzoneInstructions"] p,
     [data-testid="stFileUploaderDropzoneInstructions"] small,
     [data-testid="stFileUploader"] small,
     [data-testid="stFileUploader"] span,
     [data-testid="stFileUploader"] p {
-        color: #F8FAFC !important;
-        -webkit-text-fill-color: #F8FAFC !important;
+        color: #94A3B8 !important;
+        -webkit-text-fill-color: #94A3B8 !important;
         font-weight: 500 !important;
         font-size: 0.88rem !important;
     }
     [data-testid="stFileUploaderFile"] {
         background-color: #161B22 !important;
-        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        border: 1px solid rgba(255, 255, 255, 0.18) !important;
+        border-radius: 8px !important;
         color: #FFFFFF !important;
+        padding: 0.5rem 0.8rem !important;
     }
     [data-testid="stFileUploaderFile"] span,
     [data-testid="stFileUploaderFile"] div {
@@ -273,19 +304,68 @@ CSS_STYLING = """
         background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%) !important;
     }
 
-    /* Secondary Buttons */
-    div.stButton > button[kind="secondary"] {
-        background-color: #161B22 !important;
+    /* ---------------------------------------------------------
+       UNIVERSAL ELEVATED SECONDARY & ACTION BUTTONS
+       Fixes the muddy/black UI button contrast issue
+       --------------------------------------------------------- */
+    div.stButton > button:not([kind="primary"]),
+    div.stButton > button[kind="secondary"],
+    button[data-testid="stBaseButton-secondary"] {
+        background: linear-gradient(180deg, #2A313C 0%, #1E232B 100%) !important;
         color: #FFFFFF !important;
-        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+        border: 1px solid rgba(255, 255, 255, 0.22) !important;
         border-radius: 8px !important;
-        font-weight: 600 !important;
-        transition: all 0.2s ease !important;
+        font-weight: 700 !important;
+        font-size: 0.92rem !important;
+        padding: 0.65rem 1.25rem !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35) !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease-in-out !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
-    div.stButton > button[kind="secondary"]:hover {
-        border-color: rgba(255, 255, 255, 0.3) !important;
-        background-color: #1F2937 !important;
+    div.stButton > button:not([kind="primary"]):hover,
+    div.stButton > button[kind="secondary"]:hover,
+    button[data-testid="stBaseButton-secondary"]:hover {
+        background: linear-gradient(180deg, #374151 0%, #2A313C 100%) !important;
+        border-color: #3B82F6 !important;
         color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+        box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3) !important;
+        transform: translateY(-1px) !important;
+    }
+    div.stButton > button:not([kind="primary"]):active,
+    div.stButton > button[kind="secondary"]:active,
+    button[data-testid="stBaseButton-secondary"]:active {
+        transform: translateY(0) !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    /* High-Contrast Action for Download Buttons */
+    div.stDownloadButton > button {
+        background: linear-gradient(180deg, #1E293B 0%, #151D2A 100%) !important;
+        color: #60A5FA !important;
+        -webkit-text-fill-color: #60A5FA !important;
+        border: 1px solid rgba(59, 130, 246, 0.45) !important;
+        border-radius: 8px !important;
+        font-weight: 700 !important;
+        font-size: 0.92rem !important;
+        padding: 0.65rem 1.25rem !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35) !important;
+        transition: all 0.2s ease-in-out !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    div.stDownloadButton > button:hover {
+        background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%) !important;
+        border-color: #3B82F6 !important;
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+        box-shadow: 0 4px 16px rgba(37, 99, 235, 0.5) !important;
+        transform: translateY(-1px) !important;
     }
 
     /* Active-Recall Flip Card Box */
@@ -853,8 +933,8 @@ Latency is the time interval required for a packet of data to travel from its so
 # ---------------------------------------------------------
 def run_ui():
     st.set_page_config(
-        page_title="AI Study Notes & Flashcard Generator",
-        page_icon="📚",
+        page_title="StudyForge — Smart Notes & Flashcards",
+        page_icon="⚡",
         layout="wide",
         initial_sidebar_state="collapsed"
     )
@@ -879,52 +959,42 @@ def run_ui():
     # Brand Top Header
     # ---------------------------------------------------------
     st.markdown('<div class="saas-header">', unsafe_allow_html=True)
-    st.markdown('<div class="main-title">📚 AI-Powered <span>Study Notes & Flashcards</span></div>', unsafe_allow_html=True)
-    st.markdown('<div class="sub-title">Automated Lecture Note Summarization & Active-Recall Flashcard Web Application</div>', unsafe_allow_html=True)
-
-    st.markdown("""
-    <div class="badge-bar">
-        <span class="badge-pill badge-blue">🎓 B.Tech 2nd Year Mini Project</span>
-        <span class="badge-pill badge-emerald">🔒 100% Offline & Local (Zero API Cost)</span>
-        <span class="badge-pill badge-slate">⚡ O(N) Hash Table & Regex Engine</span>
-        <span class="badge-pill badge-amber">📄 Multi-Page PDF & Text Ingestion (pypdf)</span>
-        <span class="badge-pill badge-blue">🐼 Pandas CSV Export</span>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown('<div class="main-title">StudyForge <span>AI</span></div>', unsafe_allow_html=True)
+    st.markdown('<div class="sub-title">Transform lecture notes, articles, and documents into structured summaries and active-recall flashcards.</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
     # ---------------------------------------------------------
     # Collapsible Configuration & Presets Toolbar
     # ---------------------------------------------------------
-    with st.expander("⚙️ Advanced Configuration, Core Syllabus Presets & Academic Details", expanded=False):
-        col_cfg1, col_cfg2, col_cfg3 = st.columns([1.5, 1.5, 1.2])
+    with st.expander("Settings & Sample Notes", expanded=False):
+        col_cfg1, col_cfg2, col_cfg3 = st.columns([1.4, 1.4, 1.2])
 
         with col_cfg1:
-            st.markdown("##### ⚡ Quick Syllabus Presets")
+            st.markdown("##### Sample Study Notes")
             selected_preset = st.selectbox(
                 "Select Core Subject Sample:",
                 options=list(PRESETS.keys()),
                 index=0,
                 label_visibility="collapsed"
             )
-            if st.button("📥 Load Preset Lecture Notes", use_container_width=True):
+            if st.button("Load Sample Notes", use_container_width=True):
                 st.session_state.input_text = PRESETS[selected_preset]
                 st.session_state.current_card_index = 0
                 st.session_state.card_revealed = False
                 st.session_state.mastered_cards = set()
                 st.session_state.processed_data = None
-                st.session_state.file_meta_banner = f"Loaded `{selected_preset}` notes."
+                st.session_state.file_meta_banner = f"Loaded sample notes for '{selected_preset}'."
                 st.rerun()
 
         with col_cfg2:
-            st.markdown("##### ⚙️ Summarizer Parameters")
+            st.markdown("##### Summarizer Parameters")
             compression_slider = st.slider(
                 "Summary Compression Ratio:",
                 min_value=0.20,
                 max_value=0.60,
                 value=0.35,
                 step=0.05,
-                help="Selects top 30%–40% most informative sentences based on keyword density weights."
+                help="Selects top informative sentences based on keyword density weights."
             )
             top_keywords_slider = st.slider(
                 "Key Terms to Extract:",
@@ -935,11 +1005,11 @@ def run_ui():
             )
 
         with col_cfg3:
-            st.markdown("##### 👤 Academic Submission Details")
-            st.caption("B.Tech CSE - 2nd Year (4th Sem)")
-            st.caption("Student: **Ishant Verma** (22BCSE101)")
-            st.caption("Category: NLP Interactive Web App")
-            st.caption("Theoretical Mapping: Automata, Hash Maps, DAA")
+            st.markdown("##### Capabilities")
+            st.caption("• Client-side extractive summarization")
+            st.caption("• Active-recall question generation")
+            st.caption("• One-click export to CSV & Markdown")
+            st.caption("• In-memory local processing")
 
     st.write("")
 
@@ -951,8 +1021,8 @@ def run_ui():
     with col_left:
         st.markdown("""
         <div class="saas-card-header">
-            <span>📄 Document Ingestion</span>
-            <span class="saas-card-tag">PDF / TXT Dropzone</span>
+            <span>Upload Document</span>
+            <span class="saas-card-tag">PDF / TXT</span>
         </div>
         """, unsafe_allow_html=True)
 
@@ -973,7 +1043,7 @@ def run_ui():
         if st.session_state.file_meta_banner:
             st.info(st.session_state.file_meta_banner)
 
-        if st.button("🗑️ Reset Editor & Clear Text", use_container_width=True):
+        if st.button("Clear Text & Reset", use_container_width=True):
             st.session_state.input_text = ""
             st.session_state.processed_data = None
             st.session_state.file_meta_banner = ""
@@ -982,7 +1052,7 @@ def run_ui():
     with col_right:
         st.markdown("""
         <div class="saas-card-header">
-            <span>📝 Lecture Notes & Text Editor</span>
+            <span>Notes Editor</span>
             <span class="saas-card-tag">Interactive Input</span>
         </div>
         """, unsafe_allow_html=True)
@@ -1021,21 +1091,21 @@ def run_ui():
         status_lbl = "Ready to analyze" if char_count >= 50 else "Min 50 chars required"
         st.markdown(f"""
         <div class="metric-card">
-            <div class="metric-val" style="font-size:1.15rem; padding-top:0.35rem;">{'✅ ' + status_lbl if char_count >= 50 else '⚠️ ' + status_lbl}</div>
+            <div class="metric-val" style="font-size:1.15rem; padding-top:0.35rem;">{status_lbl}</div>
             <div class="metric-lbl">Engine Readiness</div>
         </div>
         """, unsafe_allow_html=True)
 
     st.write("")
     # Full-Width Primary Action Button
-    process_clicked = st.button("✨ Generate Summary & Flashcards", type="primary", use_container_width=True)
+    process_clicked = st.button("Generate Summary & Flashcards", type="primary", use_container_width=True)
 
     # ---------------------------------------------------------
     # Processing Logic
     # ---------------------------------------------------------
     if process_clicked:
         if char_count < 50:
-            st.warning("⚠️ Input is too short! Please paste at least 50 characters of lecture content for meaningful analysis.")
+            st.warning("Input is too short. Please paste at least 50 characters of lecture content for meaningful analysis.")
         else:
             with st.spinner("Normalizing paragraphs, scoring sentences, and generating active-recall flashcards..."):
                 comp_ratio = compression_slider if 'compression_slider' in locals() else 0.35
@@ -1082,19 +1152,19 @@ def run_ui():
 
         st.markdown("---")
 
-        tab_summary, tab_flashcards, tab_keywords, tab_viva = st.tabs([
-            "📋 Extractive Bullet Summary",
-            f"🗂️ Interactive Active-Recall Flashcards ({len(flashcards)})",
-            "🏷️ Extracted Headings & Key Terms",
-            "🎓 B.Tech Viva Defense & Syllabus Mapping"
+        tab_summary, tab_flashcards, tab_keywords, tab_tech = st.tabs([
+            "Summary",
+            f"Flashcards ({len(flashcards)})",
+            "Key Terms & Outline",
+            "Technical Architecture"
         ])
 
         # -----------------------------------------------------
         # TAB 1: Extractive Bullet Summary
         # -----------------------------------------------------
         with tab_summary:
-            st.markdown("### 📋 Module 3: Extractive Bullet-Point Summary")
-            st.caption("Extracted using keyword density weights, sentence length normalization, and structural position bonuses.")
+            st.markdown("### Key Bullet Summary")
+            st.caption("Extracted using normalized keyword density weights, sentence length normalization, and structural position bonuses.")
 
             s_c1, s_c2, s_c3, s_c4 = st.columns(4)
             with s_c1:
@@ -1134,14 +1204,14 @@ def run_ui():
                 st.info("No sentences selected. Try increasing the compression slider or pasting longer text.")
             else:
                 for s in summary_sentences:
-                    st.markdown(f'<div class="summary-bullet-item">🔹 {s}</div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="summary-bullet-item">• {s}</div>', unsafe_allow_html=True)
 
                 st.write("")
                 col_down_md, col_down_csv = st.columns(2)
                 with col_down_md:
-                    summary_md = "## AI-Generated Lecture Summary\n\n" + "\n".join([f"- {s}" for s in summary_sentences])
+                    summary_md = "## StudyForge Summary Notes\n\n" + "\n".join([f"- {s}" for s in summary_sentences])
                     st.download_button(
-                        label="📥 Download Summary Notes (.MD)",
+                        label="Download Summary Notes (.MD)",
                         data=summary_md,
                         file_name="lecture_summary.md",
                         mime="text/markdown",
@@ -1155,7 +1225,7 @@ def run_ui():
                     csv_sum_buf = io.StringIO()
                     df_summary.to_csv(csv_sum_buf, index=False)
                     st.download_button(
-                        label="📥 Download Summary Notes (.CSV)",
+                        label="Download Summary Notes (.CSV)",
                         data=csv_sum_buf.getvalue(),
                         file_name="lecture_summary.csv",
                         mime="text/csv",
@@ -1166,11 +1236,11 @@ def run_ui():
         # TAB 2: Interactive Active-Recall Flashcards
         # -----------------------------------------------------
         with tab_flashcards:
-            st.markdown("### 🗂️ Module 4: Active-Recall Flashcard Deck")
-            st.caption("Derived from definition patterns and key concepts for active-recall revision.")
+            st.markdown("### Active-Recall Flashcard Deck")
+            st.caption("Generated from definitions, key concept structures, and essential study points.")
 
             if not flashcards:
-                st.info("No flashcard definition pairs detected. Paste lecture text containing definitions or terms.")
+                st.info("No flashcard definition pairs detected. Paste text containing definitions or technical concepts.")
             else:
                 total_cards = len(flashcards)
                 curr_idx = st.session_state.current_card_index
@@ -1184,10 +1254,10 @@ def run_ui():
                 with p_c1:
                     st.markdown(f"**Card {curr_idx + 1} of {total_cards}** | Concept: `{current_card['Key Concept']}`")
                 with p_c2:
-                    st.markdown(f"🏆 Mastered: **{mastered_count} / {total_cards}**")
+                    st.markdown(f"Mastered: **{mastered_count} / {total_cards}**")
 
                 is_mastered = curr_idx in st.session_state.mastered_cards
-                mastered_badge = "✅ (Mastered)" if is_mastered else ""
+                mastered_badge = "(Mastered)" if is_mastered else ""
 
                 flashcard_html = f"""
                 <div class="active-recall-card">
@@ -1199,32 +1269,32 @@ def run_ui():
 
                 c_rev, c_mst = st.columns([2, 2])
                 with c_rev:
-                    rev_lbl = "🙈 Hide Answer" if st.session_state.card_revealed else "👀 Reveal Answer (Active Recall)"
+                    rev_lbl = "Hide Answer" if st.session_state.card_revealed else "Reveal Answer"
                     if st.button(rev_lbl, use_container_width=True):
                         st.session_state.card_revealed = not st.session_state.card_revealed
                         st.rerun()
 
                 with c_mst:
                     if curr_idx in st.session_state.mastered_cards:
-                        if st.button("🔄 Mark as Needs Review", use_container_width=True):
+                        if st.button("Mark as Needs Review", use_container_width=True):
                             st.session_state.mastered_cards.remove(curr_idx)
                             st.rerun()
                     else:
-                        if st.button("⭐ Mark as Mastered", use_container_width=True):
+                        if st.button("Mark as Mastered", use_container_width=True):
                             st.session_state.mastered_cards.add(curr_idx)
                             st.rerun()
 
                 if st.session_state.card_revealed:
                     st.markdown(f"""
                     <div class="card-revealed-box">
-                        <strong>💡 Answer / Explanation:</strong><br>{current_card['Answer']}
+                        <strong>Answer / Explanation:</strong><br>{current_card['Answer']}
                     </div>
                     """, unsafe_allow_html=True)
 
                 st.write("")
                 n_prev, n_jump, n_next = st.columns([1, 2, 1])
                 with n_prev:
-                    if st.button("⬅️ Previous", disabled=(curr_idx == 0), use_container_width=True):
+                    if st.button("Previous", disabled=(curr_idx == 0), use_container_width=True):
                         st.session_state.current_card_index -= 1
                         st.session_state.card_revealed = False
                         st.rerun()
@@ -1240,23 +1310,23 @@ def run_ui():
                         st.session_state.card_revealed = False
                         st.rerun()
                 with n_next:
-                    if st.button("Next ➡️", disabled=(curr_idx == total_cards - 1), use_container_width=True):
+                    if st.button("Next", disabled=(curr_idx == total_cards - 1), use_container_width=True):
                         st.session_state.current_card_index += 1
                         st.session_state.card_revealed = False
                         st.rerun()
 
                 st.markdown("---")
 
-                st.markdown("#### 📖 Full Deck Accordion View (Expandable Q&A Cards)")
+                st.markdown("#### All Flashcards")
                 for idx, c in enumerate(flashcards, 1):
-                    card_status = "✅ Mastered" if (idx - 1) in st.session_state.mastered_cards else "📝 Unreviewed"
+                    card_status = "Mastered" if (idx - 1) in st.session_state.mastered_cards else "Unreviewed"
                     with st.expander(f"Card {idx}: {c['Key Concept']} — {c['Question']} ({card_status})"):
                         st.markdown(f"**Question:** {c['Question']}")
                         st.markdown(f"**Answer:** {c['Answer']}")
                         st.caption(f"Pattern Detected: {c['Pattern']}")
 
                 st.markdown("---")
-                st.markdown("#### 📊 Tabular Flashcard Deck (Pandas DataFrame)")
+                st.markdown("#### Flashcards Table")
 
                 df_cards = pd.DataFrame(flashcards)
                 df_cards.index = df_cards.index + 1
@@ -1265,7 +1335,7 @@ def run_ui():
                 csv_buffer = io.StringIO()
                 df_cards.to_csv(csv_buffer, index=False)
                 st.download_button(
-                    label="📥 Download Flashcard Deck (.CSV for Anki/Quizlet)",
+                    label="Download Flashcards (.CSV for Anki/Quizlet)",
                     data=csv_buffer.getvalue(),
                     file_name="study_flashcards.csv",
                     mime="text/csv",
@@ -1276,21 +1346,21 @@ def run_ui():
         # TAB 3: Extracted Headings & Key Terms
         # -----------------------------------------------------
         with tab_keywords:
-            st.markdown("### 🏷️ Module 2: Structural Headings & Keyword Density")
-            st.caption("Extracted via Regex section matching and O(N) frequency hash table distribution.")
+            st.markdown("### Document Outline & Key Terms")
+            st.caption("Structural outline detected from section headers and high-frequency terms.")
 
             h_col, t_col = st.columns([1, 1])
 
             with h_col:
-                st.markdown("#### 📑 Structured Topic Outline")
+                st.markdown("#### Document Outline")
                 if not headings:
                     st.info("No explicit section headings found. The summarizer processed the text as a continuous passage.")
                 else:
                     for idx, h in enumerate(headings, 1):
-                        st.markdown(f'<div class="heading-node">📌 <strong>{idx}.</strong> {h}</div>', unsafe_allow_html=True)
+                        st.markdown(f'<div class="heading-node"><strong>{idx}.</strong> {h}</div>', unsafe_allow_html=True)
 
             with t_col:
-                st.markdown("#### 🔑 Top High-Frequency Technical Terms")
+                st.markdown("#### Top Key Terms")
                 kw_count = top_keywords_slider if 'top_keywords_slider' in locals() else 12
                 top_terms = sorted(freq_dict.items(), key=lambda x: x[1], reverse=True)[:kw_count]
                 if not top_terms:
@@ -1302,40 +1372,40 @@ def run_ui():
                     st.markdown(pill_html, unsafe_allow_html=True)
 
                     st.write("")
-                    df_terms = pd.DataFrame(top_terms, columns=["Technical Keyword", "Raw Frequency"])
-                    df_terms["Relative Weight (TF)"] = df_terms["Technical Keyword"].map(lambda w: round(data["norm_weights"].get(w, 0), 3))
+                    df_terms = pd.DataFrame(top_terms, columns=["Key Term", "Frequency"])
+                    df_terms["Relative Weight (TF)"] = df_terms["Key Term"].map(lambda w: round(data["norm_weights"].get(w, 0), 3))
                     df_terms.index = df_terms.index + 1
                     st.dataframe(df_terms, use_container_width=True)
 
         # -----------------------------------------------------
-        # TAB 4: B.Tech Viva Defense & Syllabus Mapping
+        # TAB 4: Technical Architecture & Specifications
         # -----------------------------------------------------
-        with tab_viva:
-            st.markdown("### 🎓 B.Tech 2nd Year Syllabus Mapping & Viva Defense")
-            st.caption("Curriculum mapping and technical explanations for laboratory/project viva defense.")
+        with tab_tech:
+            st.markdown("### Technical Architecture & Algorithm Specifications")
+            st.caption("Algorithmic design, computational complexity, and local execution guarantees.")
 
             v_col1, v_col2 = st.columns(2)
 
             with v_col1:
                 st.markdown("""
                 <div class="viva-card-box">
-                    <div class="viva-title">1. Theory of Computation & Automata</div>
-                    <p><strong>Finite-State Regex Matching:</strong></p>
+                    <div class="viva-title">1. Tokenization & Sentence Segmentation</div>
+                    <p><strong>Boundary Detection:</strong></p>
                     <ul>
-                        <li>Sentence boundary detection via lookbehind regex: <code>(?<=[.!?])\\s+</code></li>
-                        <li>Multi-pattern state transitions matching colon syntax (<code>Term: Def</code>), verb-linked (<code>is defined as</code>, <code>refers to</code>), and copula connectors.</li>
-                        <li>Deterministic processing without heavy external neural runtimes.</li>
+                        <li>Sentence boundary detection via positive lookbehind regex: <code>(?<=[.!?])\\s+</code></li>
+                        <li>Multi-pattern state transitions matching definition syntax (<code>Term: Def</code>), verb-linked (<code>is defined as</code>, <code>refers to</code>), and copula connectors.</li>
+                        <li>Deterministic in-memory processing without external cloud dependencies.</li>
                     </ul>
                 </div>
                 """, unsafe_allow_html=True)
 
                 st.markdown("""
                 <div class="viva-card-box">
-                    <div class="viva-title">2. Data Structures (Hash Maps & Hash Sets)</div>
-                    <p><strong>Hash Table Complexity:</strong></p>
+                    <div class="viva-title">2. Frequency Distribution & Filtering</div>
+                    <p><strong>Hash Table Architecture:</strong></p>
                     <ul>
-                        <li><strong>Hash Set:</strong> English stopword filtering in <code>O(1)</code> average lookup time.</li>
-                        <li><strong>Hash Map (Counter):</strong> Computes token frequency distribution in <code>O(N)</code> linear time over total document words <em>N</em>.</li>
+                        <li><strong>Stopword Filtering:</strong> English stopword filtering in <code>O(1)</code> average lookup time using hash sets.</li>
+                        <li><strong>Frequency Map:</strong> Token frequency distribution computed in <code>O(N)</code> linear time over total words <em>N</em>.</li>
                         <li>Normalized term weights calculated via single-pass linear scaling.</li>
                     </ul>
                 </div>
@@ -1344,52 +1414,49 @@ def run_ui():
             with v_col2:
                 st.markdown("""
                 <div class="viva-card-box">
-                    <div class="viva-title">3. Design and Analysis of Algorithms (DAA)</div>
-                    <p><strong>Sentence Scoring & Ranking:</strong></p>
+                    <div class="viva-title">3. Sentence Scoring & Ranking</div>
+                    <p><strong>Density & Position Weighting:</strong></p>
                     <ul>
                         <li>Sentence density scoring combines term-frequency summation normalized by sentence length.</li>
                         <li>Top-<em>K</em> sentence selection using comparison sorting in <code>O(S log S)</code> where <em>S</em> is sentence count.</li>
-                        <li>Secondary sort restores original chronological sentence sequence to preserve logical narrative flow.</li>
+                        <li>Secondary sort restores original chronological sequence to preserve logical narrative flow.</li>
                     </ul>
                 </div>
                 """, unsafe_allow_html=True)
 
                 st.markdown("""
                 <div class="viva-card-box">
-                    <div class="viva-title">4. Software Engineering & Local Deployment</div>
-                    <p><strong>Production & Viva Reliability:</strong></p>
+                    <div class="viva-title">4. Ingestion & Export Engine</div>
+                    <p><strong>Data Processing:</strong></p>
                     <ul>
-                        <li><strong>Zero External API Dependency:</strong> 100% computed locally — zero cloud API rate limits, billing failures, or network downtime during live evaluation.</li>
-                        <li><strong>Document Ingestion:</strong> In-memory PDF byte stream parsing via <code>pypdf</code> with multi-line paragraph unwrapping.</li>
-                        <li><strong>Pandas Structuring:</strong> Encapsulates flashcard decks into relational DataFrames for immediate CSV download.</li>
+                        <li><strong>Local Privacy:</strong> 100% computed on-device with zero external API calls or data transmission.</li>
+                        <li><strong>Document Ingestion:</strong> In-memory PDF byte stream parsing with multi-line paragraph unwrapping.</li>
+                        <li><strong>Structured Export:</strong> Exports notes to Markdown and flashcard decks to CSV for Anki or Quizlet.</li>
                     </ul>
                 </div>
                 """, unsafe_allow_html=True)
 
-            st.markdown("#### 💡 Frequently Asked Viva Questions (Examiner Cheat Sheet)")
-            with st.expander("Q1: Why did you choose an Extractive Summarizer instead of an Abstractive Deep Learning model (e.g. T5 or GPT)?"):
+            st.markdown("#### Technical FAQ")
+            with st.expander("Why use extractive summarization over large language model APIs?"):
                 st.markdown("""
-                **Answer:**
-                1. **Factuality & Hallucination Prevention:** Extractive summarization extracts exact factual sentences written by professors or textbooks, ensuring zero hallucinated formulas, definitions, or statements.
-                2. **Computational Footprint:** Abstractive LLMs require gigabytes of GPU VRAM and paid cloud API endpoints that can fail during live lab evaluations. Our system runs in milliseconds on any standard computer with $O(N)$ linear time complexity.
-                3. **Curriculum Mapping:** It directly demonstrates core 2nd-year CS concepts: Automata (Regex), Hash Maps (Data Structures), and Sorting (Algorithms).
+                1. **Factual Accuracy:** Extractive summarization selects exact sentences from the source text, eliminating hallucinations in technical definitions and formulas.
+                2. **Instant & Local:** Operates locally in milliseconds with minimal resource footprint ($O(N)$ linear complexity) without API rate limits or latency.
+                3. **Zero Data Leakage:** All document processing remains entirely on the local device.
                 """)
 
-            with st.expander("Q2: How does the system handle sentence boundaries without confusing abbreviations like 'e.g.' or 'i.e.'?"):
+            with st.expander("How does the system handle sentence boundaries?"):
                 st.markdown("""
-                **Answer:**
-                The tokenizer employs positive lookbehind regular expressions `(?<=[.!?])\\s+` combined with minimum length guards and alphanumeric verification. Common single-letter abbreviation patterns followed by lowercase continuation are handled without false sentence breaks.
+                The tokenizer employs positive lookbehind regular expressions `(?<=[.!?])\\s+` combined with minimum length guards and alphanumeric verification, preserving abbreviations and technical notation.
                 """)
 
-            with st.expander("Q3: What is the time complexity of the entire pipeline?"):
+            with st.expander("What is the computational complexity of the pipeline?"):
                 st.markdown("""
-                **Answer:**
                 Let $N$ be the total word count and $S$ be the total sentence count:
                 - **Tokenization & Stopword Filtering:** $O(N)$ with $O(1)$ set lookups.
                 - **Frequency Dictionary Building:** $O(N)$ linear pass.
-                - **Sentence Scoring:** $O(N)$ because each word in each sentence is evaluated once.
-                - **Sentence Ranking:** $O(S \\log S)$ to sort sentences by score, and $O(K \\log K)$ to restore original reading order.
-                - **Overall Time Complexity:** $\\mathcal{O}(N + S \\log S)$, which runs virtually instantaneously for lecture documents.
+                - **Sentence Scoring:** $O(N)$ single pass over sentence tokens.
+                - **Sentence Ranking:** $O(S \\log S)$ to sort sentences by score, and $O(K \\log K)$ to restore chronological order.
+                - **Overall Time Complexity:** $\\mathcal{O}(N + S \\log S)$, executing in milliseconds.
                 """)
 
     # ---------------------------------------------------------
@@ -1397,7 +1464,7 @@ def run_ui():
     # ---------------------------------------------------------
     st.markdown("---")
     st.markdown(
-        "<center><small style='color: #64748B;'>B.Tech 2nd Year Computer Science & Engineering Mini Project | AI-Powered Study Notes & Flashcard Generator | Built with Python, Streamlit, pypdf & Pandas</small></center>",
+        "<center><small style='color: #64748B;'>StudyForge • Intelligent Note Summarization & Active-Recall Generation</small></center>",
         unsafe_allow_html=True
     )
 

@@ -326,21 +326,23 @@
 
     .clear-btn {
       margin-top: 0.85rem;
-      background: transparent;
-      border: 1px solid var(--border-subtle);
+      background: linear-gradient(180deg, #242933 0%, #171b23 100%);
+      border: 1px solid var(--border-highlight);
       border-radius: 8px;
-      padding: 0.5rem 0.9rem;
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: var(--text-muted);
+      padding: 0.6rem 0.9rem;
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: #ffffff;
       cursor: pointer;
       transition: all 0.2s ease;
       width: 100%;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
     }
     .clear-btn:hover {
-      border-color: var(--text-muted);
-      color: #ffffff;
-      background: #191c24;
+      border-color: var(--accent);
+      color: var(--accent);
+      background: #1f2530;
+      transform: translateY(-1px);
     }
 
     /* Textarea */
@@ -499,11 +501,11 @@
       flex-wrap: wrap;
     }
     .btn-secondary {
-      background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
+      background: linear-gradient(180deg, #242933 0%, #171b23 100%);
+      border: 1px solid var(--border-highlight);
       border-radius: 8px;
-      padding: 0.6rem 1.1rem;
-      font-size: 0.85rem;
+      padding: 0.62rem 1.15rem;
+      font-size: 0.86rem;
       font-weight: 700;
       color: #ffffff;
       cursor: pointer;
@@ -512,11 +514,13 @@
       display: inline-flex;
       align-items: center;
       gap: 0.45rem;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
     }
     .btn-secondary:hover {
       border-color: var(--accent);
       color: var(--accent);
-      background: #171b24;
+      background: #1f2530;
+      transform: translateY(-1px);
     }
 
     /* Flashcard UI */
@@ -785,27 +789,19 @@
         <div class="brand-logo">⚡</div>
         <h1 class="main-title">StudyForge <span>AI</span></h1>
       </div>
-      <p class="sub-title">Automated Lecture Note Summarization & Active-Recall Flashcard Generator</p>
-
-      <!-- Compact Feature Badges -->
-      <div class="badge-bar">
-        <span class="badge-pill badge-amber">🎓 B.Tech CSE Mini Project</span>
-        <span class="badge-pill badge-emerald">🔒 Client-Side PDF/TXT (100% Offline)</span>
-        <span class="badge-pill">⚡ O(N) Keyword & Regex Engine</span>
-        <span class="badge-pill">🐼 One-Click CSV Export</span>
-      </div>
+      <p class="sub-title">Transform lecture notes, articles, and documents into structured summaries and active-recall flashcards.</p>
     </header>
 
     <!-- Collapsible Configuration Strip -->
     <div class="config-strip">
       <button class="config-toggle-btn" id="configToggleBtn" type="button">
-        <span>⚙️ Configuration, Core Syllabus Presets & Academic Details</span>
+        <span>Settings & Sample Notes</span>
         <span class="config-chevron" id="configChevron">▼</span>
       </button>
       <div class="config-body" id="configBody">
         <!-- Preset Selector -->
         <div class="cfg-group">
-          <label>Core Syllabus Preset:</label>
+          <label>Sample Study Notes:</label>
           <select class="cfg-select" id="presetSelect">
             <option value="os">Operating Systems: Process Management & Deadlocks</option>
             <option value="dsa">Data Structures & Algorithms: Trees, Graphs & Complexity</option>
@@ -813,7 +809,7 @@
             <option value="cn">Computer Networks: OSI Model & Protocol Suite</option>
           </select>
           <button class="btn-secondary" id="loadPresetBtn" type="button" style="margin-top: 0.6rem; width: 100%;">
-            📥 Load Selected Preset Notes
+            Load Sample Notes
           </button>
         </div>
 
@@ -831,14 +827,14 @@
           </div>
         </div>
 
-        <!-- Student & Submission Credentials -->
+        <!-- Capabilities -->
         <div class="cfg-group">
-          <label>Student Credentials:</label>
+          <label>Capabilities:</label>
           <div class="student-badge-grid">
-            <div>Student: <strong>Ishant Verma</strong> (22BCSE101)</div>
-            <div>Branch: <strong>B.Tech CSE — 2nd Year (4th Sem)</strong></div>
-            <div>Category: <strong>NLP & Interactive Web Application</strong></div>
-            <div>Evaluation: <strong>100% Local / Zero API Cost</strong></div>
+            <div>• <strong>Client-Side Engine:</strong> In-browser instant processing</div>
+            <div>• <strong>Active-Recall Decks:</strong> Interactive study cards</div>
+            <div>• <strong>Document Parsing:</strong> In-memory PDF and text ingestion</div>
+            <div>• <strong>Export:</strong> One-click CSV and Markdown download</div>
           </div>
         </div>
       </div>
@@ -849,8 +845,8 @@
       <!-- Left Column: Document Ingestion Dropzone -->
       <div class="card">
         <div class="card-header">
-          <div class="card-title">📄 Document Ingestion</div>
-          <span class="card-tag">PDF / TXT Dropzone</span>
+          <div class="card-title">Upload Document</div>
+          <span class="card-tag">PDF or TXT</span>
         </div>
 
         <div class="dropzone" id="dropzone">
@@ -861,14 +857,14 @@
         </div>
 
         <div class="file-status-banner" id="fileStatusBanner"></div>
-        <button class="clear-btn" id="clearBtn" type="button">🗑️ Clear Input & Reset</button>
+        <button class="clear-btn" id="clearBtn" type="button">Clear Input & Reset</button>
       </div>
 
       <!-- Right Column: Lecture Notes & Text Editor -->
       <div class="card">
         <div class="card-header">
-          <div class="card-title">📝 Lecture Notes & Text Editor</div>
-          <span class="card-tag">Live Input</span>
+          <div class="card-title">Notes Editor</div>
+          <span class="card-tag">Text Input</span>
         </div>
         <textarea
           class="notes-textarea"
@@ -893,37 +889,37 @@
         <div class="metric-lbl">Est. Reading Time</div>
       </div>
       <div class="metric-card">
-        <div class="metric-val" id="metricStatus" style="font-size: 1.05rem; padding-top: 0.35rem;">⚠️ Min 50 Chars</div>
+        <div class="metric-val" id="metricStatus" style="font-size: 1.05rem; padding-top: 0.35rem;">Min 50 Chars</div>
         <div class="metric-lbl">Engine Readiness</div>
       </div>
     </div>
 
     <!-- Action Button -->
     <button class="action-btn" id="generateBtn" type="button">
-      ⚡ Generate Summary & Flashcards
+      Generate Summary & Flashcards
     </button>
 
     <!-- Output Section -->
     <section class="output-section" id="outputSection">
       <!-- Tab Navigation (High Contrast Inactive and Active) -->
       <div class="tab-bar">
-        <button class="tab-btn active" data-tab="tabSummary" type="button">📋 Extractive Bullet Summary</button>
-        <button class="tab-btn" data-tab="tabFlashcards" type="button" id="tabFlashcardsBtn">🗂️ Active-Recall Flashcards</button>
-        <button class="tab-btn" data-tab="tabKeywords" type="button">🏷️ Headings & Key Terms</button>
-        <button class="tab-btn" data-tab="tabViva" type="button">🎓 B.Tech Viva Defense</button>
+        <button class="tab-btn active" data-tab="tabSummary" type="button">Summary</button>
+        <button class="tab-btn" data-tab="tabFlashcards" type="button" id="tabFlashcardsBtn">Flashcards</button>
+        <button class="tab-btn" data-tab="tabKeywords" type="button">Key Terms & Outline</button>
+        <button class="tab-btn" data-tab="tabViva" type="button">Technical Architecture</button>
       </div>
 
       <!-- TAB 1: Extractive Summary -->
       <div class="tab-pane active" id="tabSummary">
         <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1rem;">
-          <h3 style="font-size: 1.15rem; font-weight: 800; color: #ffffff;">📋 Extractive Bullet Summary</h3>
+          <h3 style="font-size: 1.15rem; font-weight: 800; color: #ffffff;">Key Bullet Summary</h3>
           <span style="font-size: 0.82rem; color: var(--accent); font-weight: 600;" id="reductionBadge"></span>
         </div>
         <div id="summaryBulletsContainer"></div>
 
         <div class="export-row">
-          <button class="btn-secondary" id="downloadSummaryMdBtn" type="button">📥 Download Summary (.MD)</button>
-          <button class="btn-secondary" id="downloadSummaryCsvBtn" type="button">📥 Download Summary (.CSV)</button>
+          <button class="btn-secondary" id="downloadSummaryMdBtn" type="button">Download Summary (.MD)</button>
+          <button class="btn-secondary" id="downloadSummaryCsvBtn" type="button">Download Summary (.CSV)</button>
         </div>
       </div>
 
@@ -947,21 +943,21 @@
 
           <!-- Controls -->
           <div class="fc-controls">
-            <button class="fc-nav-btn" id="fcPrevBtn" type="button">⬅️ Previous</button>
-            <button class="fc-reveal-btn" id="fcRevealBtn" type="button">👀 Reveal Answer</button>
-            <button class="fc-nav-btn" id="fcMasterToggleBtn" type="button">⭐ Mark Mastered</button>
-            <button class="fc-nav-btn" id="fcNextBtn" type="button">Next ➡️</button>
+            <button class="fc-nav-btn" id="fcPrevBtn" type="button">Previous</button>
+            <button class="fc-reveal-btn" id="fcRevealBtn" type="button">Reveal Answer</button>
+            <button class="fc-nav-btn" id="fcMasterToggleBtn" type="button">Mark Mastered</button>
+            <button class="fc-nav-btn" id="fcNextBtn" type="button">Next</button>
           </div>
         </div>
 
         <!-- Accordion Full Deck -->
         <h4 style="font-size: 1.05rem; font-weight: 700; color: #ffffff; margin: 1.75rem 0 0.85rem 0;">
-          📖 Full Deck Accordion View
+          All Flashcards
         </h4>
         <div id="accordionContainer"></div>
 
         <div class="export-row">
-          <button class="btn-secondary" id="downloadFlashcardsCsvBtn" type="button">📥 Download Flashcard Deck (.CSV)</button>
+          <button class="btn-secondary" id="downloadFlashcardsCsvBtn" type="button">Download Flashcards (.CSV)</button>
         </div>
       </div>
 
@@ -969,17 +965,17 @@
       <div class="tab-pane" id="tabKeywords">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
           <div>
-            <h4 style="font-size: 1.05rem; font-weight: 700; color: #ffffff; margin-bottom: 0.85rem;">📑 Structured Topic Outline</h4>
+            <h4 style="font-size: 1.05rem; font-weight: 700; color: #ffffff; margin-bottom: 0.85rem;">Document Outline</h4>
             <div id="headingsContainer"></div>
           </div>
           <div>
-            <h4 style="font-size: 1.05rem; font-weight: 700; color: #ffffff; margin-bottom: 0.85rem;">🔑 Top High-Frequency Technical Keywords</h4>
+            <h4 style="font-size: 1.05rem; font-weight: 700; color: #ffffff; margin-bottom: 0.85rem;">Top Key Terms</h4>
             <div class="tag-cloud" id="tagCloud"></div>
             <table class="clean-table" id="termsTable">
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>Technical Term</th>
+                  <th>Key Term</th>
                   <th>Frequency</th>
                   <th>Normalized Weight (TF)</th>
                 </tr>
@@ -990,22 +986,22 @@
         </div>
       </div>
 
-      <!-- TAB 4: Viva Defense & Algorithm Mapping -->
+      <!-- TAB 4: Technical Architecture & Algorithm Specifications -->
       <div class="tab-pane" id="tabViva">
         <div class="viva-grid">
           <div class="viva-box">
-            <div class="viva-title">1. Theory of Computation & Automata</div>
-            <p><strong>Finite-State Regex Matching:</strong></p>
+            <div class="viva-title">1. Tokenization & Sentence Segmentation</div>
+            <p><strong>Boundary Detection:</strong></p>
             <ul>
-              <li>Sentence boundary detection via lookbehind: <code>(?&lt;=[.!?])\s+</code></li>
+              <li>Sentence boundary detection via lookbehind regex: <code>(?&lt;=[.!?])\s+</code></li>
               <li>Multi-pattern deterministic matchers for definition structures (<code>Term: Def</code>, <code>X is defined as Y</code>, <code>X refers to Y</code>).</li>
               <li>Operates locally in linear time with zero GPU VRAM or cloud token cost.</li>
             </ul>
           </div>
 
           <div class="viva-box">
-            <div class="viva-title">2. Data Structures (Hash Maps & Sets)</div>
-            <p><strong>Hash Table Complexity:</strong></p>
+            <div class="viva-title">2. Frequency Distribution & Filtering</div>
+            <p><strong>Hash Table Architecture:</strong></p>
             <ul>
               <li><strong>Hash Set:</strong> English stopword filtering in average <code>O(1)</code> time.</li>
               <li><strong>Hash Map:</strong> Token frequency distribution computed in <code>O(N)</code> linear time over total document words <em>N</em>.</li>
@@ -1014,8 +1010,8 @@
           </div>
 
           <div class="viva-box">
-            <div class="viva-title">3. Design & Analysis of Algorithms (DAA)</div>
-            <p><strong>Sentence Scoring & Ranking:</strong></p>
+            <div class="viva-title">3. Sentence Scoring & Ranking</div>
+            <p><strong>Density & Position Weighting:</strong></p>
             <ul>
               <li>Combines word frequency density with positional and definition weight bonuses.</li>
               <li>Top-<em>K</em> sentence selection using comparison sorting in <code>O(S log S)</code>.</li>
@@ -1024,11 +1020,11 @@
           </div>
 
           <div class="viva-box">
-            <div class="viva-title">4. Real-World Engineering & Evaluation</div>
-            <p><strong>Examiner Defense Highlights:</strong></p>
+            <div class="viva-title">4. Ingestion & Export Engine</div>
+            <p><strong>Data Processing:</strong></p>
             <ul>
-              <li><strong>Zero API Vulnerability:</strong> 100% computed client-side. Zero API billing failures, rate limits, or network downtime during live evaluation.</li>
-              <li><strong>Factuality:</strong> Extractive summarization prevents hallucinated formulas or definitions.</li>
+              <li><strong>Local Privacy:</strong> 100% computed client-side with zero external API calls or data transmission.</li>
+              <li><strong>Factuality:</strong> Extractive summarization selects verbatim sentences, eliminating hallucinations.</li>
               <li><strong>Document Ingestion:</strong> Multi-page PDF text extraction via PDF.js with automated paragraph un-wrapping.</li>
             </ul>
           </div>
@@ -1038,7 +1034,7 @@
 
     <!-- Footer -->
     <footer class="footer">
-      StudyForge AI — B.Tech 2nd Year Computer Science & Engineering Mini Project | Developed by Ishant Verma (22BCSE101)
+      StudyForge • Intelligent Note Summarization & Active-Recall Generation
     </footer>
   </div>
 
